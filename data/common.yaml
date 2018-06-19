@@ -1,0 +1,20 @@
+---
+lookup_options:
+  dconf::user_profile:
+    merge:
+      strategy: deep
+      knockout_prefix: --
+
+dconf::user_profile:
+  user:
+    type: user
+    order: 1
+  local:
+    type: system
+    order: 20
+  site:
+    type: system
+    order: 30
+  distro:
+    type: system
+    order: 40

@@ -3,7 +3,10 @@
 # @see man 7 dconf
 #
 # @param name
-#   The name of the profile file in ``/etc/dconf/profile``
+#   A globally unique name for the entry
+#
+# @param target
+#   The name of the profile file in ``base_dir``
 #
 # @param entries
 #   One or entries in the following Hash format:
@@ -23,8 +26,9 @@
 #   The target directory within which to create the profile
 #
 define dconf::profile (
+  String[1]            $target,
   Dconf::DBSettings    $entries,
-  Stdlib::AbsolutePath $target   = '/etc/dconf/profile'
+  Stdlib::AbsolutePath $base_dir = '/etc/dconf/profile'
 ) {
 
   include 'dconf'
