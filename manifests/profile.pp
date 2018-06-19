@@ -15,7 +15,9 @@
 #
 #   * The suggested default hierarchy used by the module data is as follows:
 #     * User DB   => 0
+#     * SIMP DB   => 10
 #     * System DB => Between 11 and 39
+#     * Distro DB => 40
 #
 # @param target
 #   The target directory within which to create the profile
