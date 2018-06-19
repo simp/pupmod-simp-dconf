@@ -25,22 +25,22 @@
 # @param target
 #   The target directory within which to create the profile
 #
+# @param base_dir
+#   The base directory that will hold the resulting file
+#
 define dconf::profile (
-  String[1]            $target,
   Dconf::DBSettings    $entries,
+  String[1]            $target = $name,
   Stdlib::AbsolutePath $base_dir = '/etc/dconf/profile'
 ) {
-
-  include 'dconf'
-
-  ensure_resource('file', $target, {
+  ensure_resource('file', $base_dir, {
     'ensure' => 'directory',
     'owner'  => 'root',
     'group'  => 'root',
     'mode'   => '0644'
   })
 
-  ensure_resource('concat', "${target}/${name}", {
+  ensure_resource('concat', "${base_dir}/${target}", {
     'ensure' => 'present',
     'order'  => 'numeric'
   })
@@ -48,8 +48,8 @@ define dconf::profile (
   $_default_order = 15
 
   $entries.each |String[1] $db_name, Hash $attrs| {
-    concat::fragment { "${module_name}::profile::${name}::${db_name}":
-      target  => "${target}/${name}",
+    concat::fragment { "${module_name}::profile::${target}::${db_name}":
+      target  => "${base_dir}/${target}",
       content => "${attrs['type']}-db:${db_name}\n",
       order   => pick($attrs['order'], $_default_order)
     }

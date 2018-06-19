@@ -17,10 +17,10 @@
 #   The name of the profile that should be targeted for the defaults
 #
 class dconf (
-  Dconf::SettingsHash $user_profile,
-  String[1]           $package_ensure            = 'present',
-  Boolean             $use_user_profile_defaults = true,
-  String[1]           $user_profile_target       = 'user'
+  Dconf::DBSettings $user_profile,
+  String[1]         $package_ensure            = 'present',
+  Boolean           $use_user_profile_defaults = true,
+  String[1]         $user_profile_target       = 'user'
 ) {
   simplib::assert_metadata($module_name)
 
