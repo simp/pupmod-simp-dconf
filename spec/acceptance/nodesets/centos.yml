@@ -1,0 +1,16 @@
+HOSTS:
+  el7:
+    roles:
+      - default
+    platform:   el-7-x86_64
+    box:        centos/7
+    hypervisor: vagrant
+    yum_repos:
+      epel:
+        mirrorlist: 'https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch'
+        gpgkeys:
+          - https://getfedora.org/static/352C64E5.txt
+CONFIG:
+  log_level: verbose
+  type: aio
+  vagrant_memsize: 256

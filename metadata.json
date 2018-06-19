@@ -1,0 +1,46 @@
+{
+  "name": "simp-dconf",
+  "version": "0.0.1",
+  "author": "SIMP Team",
+  "summary": "Provides an interface to system DConf configuration",
+  "license": "Apache-2.0",
+  "source": "https://github.com/simp/pupmod-simp-dconf",
+  "project_page": "https://github.com/simp/pupmod-simp-dconf",
+  "issues_url": "https://simp-project.atlassian.net",
+  "tags": [
+    "simp",
+    "dconf",
+    "desktop"
+  ],
+  "dependencies": [
+    {
+      "name": "simp/simplib",
+      "version_requirement": ">= 3.1.0 < 4.0.0"
+    },
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.9.0 < 5.0.0"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.7.0 < 6.0.0"
+    }
+  ],
+  "data_provider": "hiera"
+}
