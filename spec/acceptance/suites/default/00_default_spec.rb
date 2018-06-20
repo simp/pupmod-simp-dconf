@@ -7,7 +7,7 @@ describe 'dconf class' do
     <<-EOS
       include '::dconf'
 
-      dconf::profile { 'user':
+      dconf::profile { 'test':
         entries => {
           'user' => {
             'type' => 'user',
@@ -21,7 +21,7 @@ describe 'dconf class' do
       }
 
       dconf::settings { 'test settings':
-        profile => 'user',
+        profile => 'test',
         settings_hash => {
           'org/gnome/desktop/lockdown' => {
             'disable-command-line' => {

@@ -33,6 +33,8 @@ define dconf::profile (
   String[1]            $target = $name,
   Stdlib::AbsolutePath $base_dir = '/etc/dconf/profile'
 ) {
+  include 'dconf'
+
   ensure_resource('file', $base_dir, {
     'ensure' => 'directory',
     'owner'  => 'root',

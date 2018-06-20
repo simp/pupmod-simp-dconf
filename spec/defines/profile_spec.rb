@@ -8,9 +8,9 @@ describe 'dconf::profile', :type => :define do
       end
 
       context 'with a set of entries' do
-        let(:title) { 'user' }
+        let(:title) { 'test' }
         let(:params) {{
-          :target => 'user',
+          :target => 'test',
           :entries => {
             'user' => {
               'type' => 'user',
