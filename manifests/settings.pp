@@ -40,7 +40,8 @@ define dconf::settings (
     'group'   => 'root',
     'mode'    => '0644',
     'recurse' => true,
-    'purge'   => true
+    'purge'   => true,
+    require  => Class['dconf::install']
   })
 
   ensure_resource('file', $_target, {

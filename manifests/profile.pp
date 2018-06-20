@@ -39,7 +39,8 @@ define dconf::profile (
     'ensure' => 'directory',
     'owner'  => 'root',
     'group'  => 'root',
-    'mode'   => '0644'
+    'mode'   => '0644',
+    require  => Class['dconf::install']
   })
 
   ensure_resource('concat', "${base_dir}/${target}", {
