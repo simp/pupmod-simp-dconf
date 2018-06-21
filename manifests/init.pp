@@ -18,7 +18,7 @@
 #
 class dconf (
   Dconf::DBSettings      $user_profile,
-  Simplib::PackageEnsure $package_ensure            = 'present',
+  Simplib::PackageEnsure $package_ensure            = simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' }),
   Boolean                $use_user_profile_defaults = true,
   String[1]              $user_profile_target       = 'user'
 ) {
