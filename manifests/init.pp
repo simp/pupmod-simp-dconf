@@ -18,9 +18,9 @@
 #
 class dconf (
   Dconf::DBSettings      $user_profile,
-  String[1]              $package_ensure            = 'present',
+  Simplib::PackageEnsure $package_ensure            = 'present',
   Boolean                $use_user_profile_defaults = true,
-  Simplib::PackageEnsure $user_profile_target       = 'user'
+  String[1]              $user_profile_target       = 'user'
 ) {
   simplib::assert_metadata($module_name)
 
