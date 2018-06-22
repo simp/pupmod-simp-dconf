@@ -15,3 +15,5 @@ junit/
 log/
 doc/
 tests/
+spec/
+
