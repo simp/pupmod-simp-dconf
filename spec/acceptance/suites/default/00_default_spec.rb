@@ -55,7 +55,7 @@ describe 'dconf class' do
       end
 
       it 'should have dconf installed' do
-        host.check_for_command('dconf').should be true
+        expect(host.check_for_command('dconf')).to be true
       end
     end
   end
