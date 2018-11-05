@@ -230,4 +230,4 @@ pup5.5.7-oel:
   <<: *pup_5_5_7
   <<: *acceptance_tests
   script:
-    - 'bundle exec rake beaker:suites[default,oel-combined-x64]'
+    - 'bundle exec rake beaker:suites[default,oel]'
