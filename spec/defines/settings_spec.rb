@@ -110,6 +110,39 @@ describe 'dconf::settings', :type => :define do
           :value   => true
         }) }
       end
+
+      context 'with two resources with different values' do
+        let(:pre_condition) { <<-EOM
+          dconf::settings { 'Other Arbitrary Name':
+            ensure        => 'present',
+            profile       => 'gdm',
+            settings_hash => {
+              'org/gnome/desktop/screensaver2' => {
+                'lock-delay' => { 'value' => true, 'lock' => true }
+              }
+            }
+          }
+          EOM
+        }
+
+        let(:title) { 'Arbitrary Name' }
+        let(:params) {{
+          :ensure        => 'present',
+          :profile       => 'gdm',
+          :settings_hash => {
+            'org/gnome/desktop/screensaver' => {
+              'lock-delay' => { 'value' => true, 'lock' => true }
+            },
+            'org/gnome/desktop/background' => {
+              'picture-uri'     => { 'value' => '/home/test/Pictures/puppies.jpg', 'lock' => false },
+              'picture-options' => { 'value' => 'scaled' , 'lock' => :undef },
+              'primary-color'   => { 'value' => '000000'},
+            }
+          }
+        }}
+
+        it { is_expected.to compile.with_all_deps }
+      end
     end
   end
 end

@@ -1,3 +1,7 @@
+* Wed Jan 02 2019 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.0.3
+- Fix issue with duplicate resources when creating multiple `dconf::settings`
+  resources under the same namespace.
+
 * Mon Nov 05 2018 Liz Nemsick <lnemsick-simp@gmail.com> - 0.0.2
 - Update to Hiera 5
 

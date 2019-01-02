@@ -78,28 +78,28 @@ define dconf::settings (
   }).join("\n")
 
   if $_lock_content == '' {
-    file { "${_profile_dir}/locks/${_name}":
+    ensure_resource('file', "${_profile_dir}/locks/${_name}", {
       ensure => absent
-    }
+    })
   }
   else {
-    file { "${_profile_dir}/locks":
+    ensure_resource('file', "${_profile_dir}/locks", {
       ensure  => 'directory',
       owner   => 'root',
       group   => 'root',
       mode    => '0640',
       recurse => true,
       purge   => true
-    }
+    })
 
-    file { "${_profile_dir}/locks/${_name}":
+    ensure_resource('file', "${_profile_dir}/locks/${_name}", {
       ensure  => 'file',
       owner   => 'root',
       group   => 'root',
       mode    => '0640',
       content => $_lock_content,
       notify  => Exec["dconf update ${name}"]
-    }
+    })
   }
 
   # `dconf update` doesn't return anything besides 0, so we have to figure out
