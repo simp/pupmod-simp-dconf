@@ -1,4 +1,4 @@
-* Fri Aug 02 2019 Robert Vincent <pillarsdotnet@gmail.com> - 0.0.3
+* Fri Aug 02 2019 Robert Vincent <pillarsdotnet@gmail.com> - 0.1.0
 - Remove Puppet 4.x support
 - Add Puppet 6.x support
 - Add puppetlabs/stdlib 6.x support
