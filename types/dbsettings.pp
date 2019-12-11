@@ -1,3 +1,4 @@
+# @summary Valid dconf database settings
 type Dconf::DBSettings = Hash[
   String[1],                                              # The name of the database
   Struct[{

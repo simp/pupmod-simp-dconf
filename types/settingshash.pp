@@ -1,3 +1,4 @@
+# @summary Valid individual dconf settings
 type Dconf::SettingsHash = Hash[
   String[1],
   Hash[
