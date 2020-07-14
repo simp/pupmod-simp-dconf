@@ -12,6 +12,13 @@
   * [This is a SIMP module](#this-is-a-simp-module)
 * [Setup](#setup)
 * [Usage](#usage)
+  * [Configuring custom rules](#configuring-custom-rules)
+* [> to prevent users from modifying them!](#-to-prevent-users-from-modifying-them)
+    * [Using `puppet`](#using-puppet)
+    * [Using `hiera`](#using-hiera)
+  * [Configuring custom profiles](#configuring-custom-profiles)
+    * [Using `puppet`](#using-puppet-1)
+    * [Globally With `hiera`](#globally-with-hiera)
 * [Reference](#reference)
 * [Limitations](#limitations)
 * [Development](#development)
@@ -49,17 +56,74 @@ include 'dconf'
 
 ## Usage
 
-All `dconf` settings are locked by default so that users can't change them.
+### Configuring custom rules
 
-This can be disabled on a per setting basis, like in this entry for wallpaper
-taken from the `simp-gnome` module.
+You can configure custom ``dconf`` settings using the ``dconf::settings``
+defined type.
+
+---
+> Any settings that are configured using this code will automatically be locked
+> to prevent users from modifying them!
+---
+
+#### Using `puppet`
+
+```puppet
+dconf::settings { 'automount_lockdowns':
+  settings_hash => {
+    'org/gnome/desktop/media-handling' => {
+      'automount'      => { 'value' => false, 'lock' => false } # allow users to change this one
+      'automount-open' => { 'value' => false }
+    }
+  }
+}
+```
+
+#### Using `hiera`
 
 ```yaml
-gnome::dconf_hash:
-  org/dconf/desktop/background:
-    picture-uri:
-      value: file:///usr/local/corp/puppies.jpg
-      lock: false
+---
+dconf::user_settings:
+  settings_hash:
+    org/gnome/desktop/media-handling:
+      automount:
+        value: false
+        lock: false # allow users to change this one
+      automount-open:
+        value: false
+```
+
+### Configuring custom profiles
+
+You can set up a custom [dconf profile](https://help.gnome.org/admin//system-admin-guide/3.8/dconf-profiles.html.en) as follows:
+
+#### Using `puppet`
+
+```puppet
+dconf::profile { 'my_profile':
+  entries => {
+    'user' => {
+      'type' => 'user',
+      'order' => 1
+    },
+    'system' => {
+      'type' => 'system',
+      'order' => 10
+    }
+  }
+```
+
+#### Globally With `hiera`
+
+```yaml
+---
+dconf::user_profile:
+  my_user:
+    type: user
+    order: 0
+  my_system:
+    type: system
+    order: 10
 ```
 
 ## Reference

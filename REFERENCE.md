@@ -16,7 +16,7 @@ _Private Classes_
 **Defined types**
 
 * [`dconf::profile`](#dconfprofile): Updates a ``dconf`` profile entry to ``/etc/dconf/profile/$name``
-* [`dconf::settings`](#dconfsettings): Add a dconf rule to the profile of your choice  This adds a configuration file to the /etc/dconf/db/<profile>.d directory. The dconf datbase 
+* [`dconf::settings`](#dconfsettings): Add a dconf rule to the profile of your choice  This adds a configuration file to the /etc/dconf/db/<profile>.d directory. The dconf database
 
 **Data types**
 
@@ -37,9 +37,17 @@ The following parameters are available in the `dconf` class.
 
 Data type: `Dconf::DBSettings`
 
-The contents of the user profile that will be added
+The contents of the default user profile that will be added
 
 @see data/common.yaml
+
+##### `user_settings`
+
+Data type: `Optional[Dconf::SettingsHash]`
+
+Custom user settings that can be provided via Hiera globally
+
+Default value: `undef`
 
 ##### `package_ensure`
 
@@ -59,6 +67,15 @@ Add the default `user_profile` settings to the system
 
 Default value: `true`
 
+##### `user_profile_defaults_name`
+
+Data type: `String[1]`
+
+The name that should be used for the custom `dconf::profile` in
+`user_profile`
+
+Default value: 'Defaults'
+
 ##### `user_profile_target`
 
 Data type: `String[1]`
@@ -66,6 +83,23 @@ Data type: `String[1]`
 The name of the profile that should be targeted for the defaults
 
 Default value: 'user'
+
+##### `use_user_settings_defaults`
+
+Data type: `Boolean`
+
+Enable creation of custom `dconf::settings` based on the `user_settings` Hash
+
+Default value: $use_user_profile_defaults
+
+##### `user_settings_defaults_name`
+
+Data type: `String[1]`
+
+The name that should be used for the custom 'dconf::settings' as well as
+the target profile for those settings
+
+Default value: $user_profile_defaults_name
 
 ## Defined types
 
@@ -129,7 +163,7 @@ Default value: '/etc/dconf/profile'
 Add a dconf rule to the profile of your choice
 
 This adds a configuration file to the /etc/dconf/db/<profile>.d directory.
-The dconf datbase is updated when any rule is added.  You can also elect to
+The dconf database is updated when any rule is added.  You can also elect to
 lock a value so that general users cannot change it.
 
 #### Parameters
@@ -140,29 +174,32 @@ The following parameters are available in the `dconf::settings` defined type.
 
 Data type: `Dconf::SettingsHash`
 
-A hash to define the settings to be generated. You can set
-whether to lock each setting like in the exmaple
-An example hash would look like:
-```
-{
-  'org/gnome/desktop/media-handling' => {
-    'automount' => { 'value' => false, 'lock' => false },
-    'automount-open' => { 'value' => false }
+A Hash to define the settings to be generated. You can set whether to lock
+each setting like in the exmaple
+
+@example
+  {
+    'org/gnome/desktop/media-handling' => {
+      'automount' => { 'value' => false, 'lock' => false },
+      'automount-open' => { 'value' => false }
+    }
   }
-}
-```
+
+Default value: {}
 
 ##### `profile`
 
-Data type: `String[1]`
+Data type: `Optional[String[1]]`
 
 The dconf profile where you want to place the key/value.
+
+Default value: `undef`
 
 ##### `ensure`
 
 Data type: `Enum['present','absent']`
 
-Ensure the setting is present or absent
+Ensure the entire settings Hash is present or absent
 
 Default value: 'present'
 

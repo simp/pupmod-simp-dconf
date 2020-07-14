@@ -1,6 +1,9 @@
-* Wed Dec 11 2019 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.1.0
+* Tue Jul 14 2020 Trevor Vaughan <tvaughan@onyxpoint.com> - 0.1.0
 - Add EL8 support
-- Add REFERENCE.md
+- Fixed the README
+- Added REFERENCE.md
+- Allow users to set custom settings via Hiera
+- Fix `ensure = absent` in `dconf::settings`
 
 * Fri Aug 02 2019 Robert Vincent <pillarsdotnet@gmail.com> - 0.1.0
 - Remove Puppet 4.x support

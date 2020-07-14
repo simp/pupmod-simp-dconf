@@ -1,9 +1,12 @@
 # Manage 'dconf' and associated entries
 #
 # @param user_profile
-#   The contents of the user profile that will be added
+#   The contents of the default user profile that will be added
 #
 #   @see data/common.yaml
+#
+# @param user_settings
+#   Custom user settings that can be provided via Hiera globally
 #
 # @param package_ensure
 #   The version of `dconf` to install
@@ -13,23 +16,50 @@
 # @param use_user_profile_defaults
 #   Add the default `user_profile` settings to the system
 #
+# @param user_profile_defaults_name
+#   The name that should be used for the custom `dconf::profile` in
+#   `user_profile`
+#
 # @param user_profile_target
 #   The name of the profile that should be targeted for the defaults
 #
+# @param use_user_settings_defaults
+#   Enable creation of custom `dconf::settings` based on the `user_settings` Hash
+#
+# @param user_settings_defaults_name
+#   The name that should be used for the custom 'dconf::settings' as well as
+#   the target profile for those settings
+#
 class dconf (
-  Dconf::DBSettings      $user_profile,
-  Simplib::PackageEnsure $package_ensure            = simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' }),
-  Boolean                $use_user_profile_defaults = true,
-  String[1]              $user_profile_target       = 'user'
+  Dconf::DBSettings             $user_profile,
+  Optional[Dconf::SettingsHash] $user_settings               = undef,
+  Simplib::PackageEnsure        $package_ensure              = simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' }),
+  Boolean                       $use_user_profile_defaults   = true,
+  String[1]                     $user_profile_defaults_name  = 'Defaults',
+  String[1]                     $user_profile_target         = 'user',
+  Boolean                       $use_user_settings_defaults  = $use_user_profile_defaults,
+  String[1]                     $user_settings_defaults_name = $user_profile_defaults_name
 ) {
   simplib::assert_metadata($module_name)
 
   include 'dconf::install'
 
   if $use_user_profile_defaults {
-    dconf::profile { 'Defaults':
+    dconf::profile { $user_profile_defaults_name:
       target  => $user_profile_target,
       entries => $user_profile
+    }
+  }
+
+  if $user_settings and $use_user_settings_defaults {
+    dconf::settings { $user_settings_defaults_name:
+      settings_hash => $user_settings,
+      profile       => $user_settings_defaults_name
+    }
+  }
+  else {
+    dconf::settings { $user_settings_defaults_name:
+      ensure => 'absent'
     }
   }
 }

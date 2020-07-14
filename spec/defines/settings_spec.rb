@@ -7,7 +7,6 @@ describe 'dconf::settings', :type => :define do
         os_facts
       end
 
-
       context 'with minimal parameters' do
         let(:title) { 'Enable lock delay' }
         let(:params) {{
