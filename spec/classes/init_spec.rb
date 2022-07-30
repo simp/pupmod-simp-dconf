@@ -8,7 +8,7 @@ describe 'dconf' do
       it { is_expected.to compile.with_all_deps }
       it { is_expected.to create_class('dconf') }
       it { is_expected.to create_class('dconf::install') }
-      it { is_expected.to create_package('dconf').with_ensure('present') }
+      it { is_expected.to create_package('dconf').with_ensure('installed') }
       it { is_expected.to create_dconf__profile('Defaults').with_target('user') }
       it {
         is_expected.to create_dconf__profile('Defaults').with_entries(
