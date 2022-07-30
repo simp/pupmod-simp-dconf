@@ -1,3 +1,6 @@
+* Sat Jul 30 2022 Joshua Hoblitt <joshua@hoblitt.com> - 0.2.2
+- Add support for Alma and Rocky Linux
+
 * Sun Feb 13 2022 Trevor Vaughan <trevor@sicura.us> - 0.2.1
 - Add support for Amazon Linux 2
 
