@@ -1,24 +1,17 @@
-<%
-  if ENV['BEAKER_HYPERVISOR']
-    hypervisor = ENV['BEAKER_HYPERVISOR']
-  else
-    hypervisor = 'vagrant'
-  end
--%>
+---
 HOSTS:
   rocky8:
     roles:
-      - default
-    platform:   el-8-x86_64
-    box:        rockylinux/8
-    hypervisor: <%= hypervisor %>
-
+    - default
+    platform: el-8-x86_64
+    box: rockylinux/8
+    hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
+    family: rocky-linux-cloud/rocky-linux-8
+    gce_machine_type: n1-standard-2
 CONFIG:
   log_level: verbose
   type: aio
   multi_node: false
   synced_folder: disabled
   vagrant_cpus: 2
-<% if ENV['BEAKER_PUPPET_COLLECTION'] -%>
-  puppet_collection: <%= ENV['BEAKER_PUPPET_COLLECTION'] %>
-<% end -%>
+  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'puppet7') %>"
