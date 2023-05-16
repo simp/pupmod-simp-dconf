@@ -18,6 +18,10 @@
       "version_requirement": ">= 3.1.0 < 5.0.0"
     },
     {
+      "name": "simp/simp_options",
+      "version_requirement": ">= 1.6.1 < 2.0.0"
+    },
+    {
       "name": "puppetlabs/stdlib",
       "version_requirement": ">= 6.6.0 < 8.0.0"
     }
