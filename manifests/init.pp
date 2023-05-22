@@ -30,6 +30,10 @@
 #   The name that should be used for the custom 'dconf::settings' as well as
 #   the target profile for those settings
 #
+# @param tidy
+#   If set to true, any files in the profile directory that aren't managed by puppet
+#   will be purged
+#
 class dconf (
   Dconf::DBSettings             $user_profile,
   Optional[Dconf::SettingsHash] $user_settings               = undef,
@@ -38,7 +42,8 @@ class dconf (
   String[1]                     $user_profile_defaults_name  = 'Defaults',
   String[1]                     $user_profile_target         = 'user',
   Boolean                       $use_user_settings_defaults  = $use_user_profile_defaults,
-  String[1]                     $user_settings_defaults_name = $user_profile_defaults_name
+  String[1]                     $user_settings_defaults_name = $user_profile_defaults_name,
+  Boolean                       $tidy                        = true,
 ) {
   simplib::assert_metadata($module_name)
 
@@ -47,19 +52,25 @@ class dconf (
   if $use_user_profile_defaults {
     dconf::profile { $user_profile_defaults_name:
       target  => $user_profile_target,
-      entries => $user_profile
+      entries => $user_profile,
     }
   }
 
   if $user_settings and $use_user_settings_defaults {
     dconf::settings { $user_settings_defaults_name:
       settings_hash => $user_settings,
-      profile       => $user_settings_defaults_name
+      profile       => $user_settings_defaults_name,
     }
   }
   else {
     dconf::settings { $user_settings_defaults_name:
-      ensure => 'absent'
+      ensure => 'absent',
     }
+  }
+
+  # If using authselect, the following files need to managed or there will be conflicts
+  if $simp_options::authselect {
+    file { '/etc/dconf/db/distro.d/20-authselect': }
+    file { '/etc/dconf/db/distro.d/locks/20-authselect': }
   }
 }

@@ -31,7 +31,6 @@ define dconf::settings (
   Enum['present','absent'] $ensure        = 'present',
   Stdlib::AbsolutePath     $base_dir      = '/etc/dconf/db',
 ) {
-
   include 'dconf'
 
   if $profile {
@@ -41,7 +40,7 @@ define dconf::settings (
     $_profile = $dconf::user_profile_defaults_name
   }
   else {
-    fail("You must specifiy a '$profile' for '${title}'")
+    fail("You must specifiy a '${profile}' for '${title}'")
   }
 
   $_name = regsubst($name.downcase, '( |/|!|@|#|\$|%|\^|&|\*|[|])', '_', 'G')
@@ -50,70 +49,69 @@ define dconf::settings (
   $_target = "${_profile_dir}/${_name}"
 
   ensure_resource('file', $_profile_dir, {
-    'ensure'  => 'directory',
-    'owner'   => 'root',
-    'group'   => 'root',
-    'mode'    => '0644',
-    'recurse' => true,
-    'purge'   => true,
-    require   => Class['dconf::install']
+      'ensure'  => 'directory',
+      'owner'   => 'root',
+      'group'   => 'root',
+      'mode'    => '0644',
+      'recurse' => true,
+      'purge'   => $dconf::tidy,
+      require   => Class['dconf::install']
   })
 
   ensure_resource('file', $_target, {
-    'ensure' => 'file',
-    'owner'  => 'root',
-    'group'  => 'root',
-    'mode'   => '0644'
+      'ensure' => 'file',
+      'owner'  => 'root',
+      'group'  => 'root',
+      'mode'   => '0644'
   })
 
   $_lock_content = flatten($settings_hash.map |$_schema, $_settings| {
-
-    $_settings.keys.each |$_key| {
-      ini_setting { "${_target} [${_schema}] $_key":
-        ensure  => $ensure,
-        path    => $_target,
-        section => $_schema,
-        setting => $_key,
-        value   => $_settings[$_key]['value'],
-        notify  => Exec["dconf update ${title}"]
+      $_settings.keys.each |$_key| {
+        ini_setting { "${_target} [${_schema}] ${_key}":
+          ensure  => $ensure,
+          path    => $_target,
+          section => $_schema,
+          setting => $_key,
+          value   => $_settings[$_key]['value'],
+          notify  => Exec["dconf update ${title}"],
+        }
       }
-    }
 
-    $_settings_to_lock = $_settings.map |$_item, $_setting| {
-      if $_setting['lock'] == false {
-        $_ret = undef
+      $_settings_to_lock = $_settings.map |$_item, $_setting| {
+        if $_setting['lock'] == false {
+          $_ret = undef
+        }
+        else {
+          $_ret = "/${$_schema}/${_item}"
+        }
+        $_ret
       }
-      else {
-        $_ret = "/${$_schema}/${_item}"
-      }
-      $_ret
-    }
 
-    $_settings_to_lock.delete_undef_values
+      $_settings_to_lock.delete_undef_values
   }).join("\n")
 
   if $_lock_content == '' {
     ensure_resource('file', "${_profile_dir}/locks/${_name}", {
-      ensure => absent
+        ensure => absent
     })
   }
   else {
     ensure_resource('file', "${_profile_dir}/locks", {
-      ensure  => 'directory',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0640',
-      recurse => true,
-      purge   => true
+        ensure  => 'directory',
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0640',
+        recurse => true,
+        purge   => $dconf::tidy
     })
 
     ensure_resource('file', "${_profile_dir}/locks/${_name}", {
-      ensure  => $ensure,
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0640',
-      content => $_lock_content,
-      notify  => Exec["dconf update ${title}"]
+        ensure  => $ensure,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0640',
+        content => $_lock_content,
+        notify  => Exec["dconf update ${title}"]
     })
   }
 
@@ -123,6 +121,6 @@ define dconf::settings (
     command     => '/bin/dconf update |& /bin/tee /dev/fd/2 | /bin/wc -c | /bin/grep ^0$',
     logoutput   => true,
     umask       => '0033',
-    refreshonly => true
+    refreshonly => true,
   }
 }
