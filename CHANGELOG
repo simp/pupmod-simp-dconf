@@ -1,3 +1,8 @@
+* Tue May 16 2023 Mike Riddle <mike@sicura.us> - 0.2.3
+- Added support for authselect
+- Added the tidy option to give the users an option to not purge
+  unmanaged files
+
 * Sat Jul 30 2022 Joshua Hoblitt <joshua@hoblitt.com> - 0.2.2
 - Add support for Alma and Rocky Linux
 

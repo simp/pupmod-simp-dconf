@@ -5,9 +5,6 @@
 # @param name
 #   A globally unique name for the entry
 #
-# @param target
-#   The name of the profile file in ``base_dir``
-#
 # @param entries
 #   One or entries in the following Hash format:
 #
@@ -36,16 +33,16 @@ define dconf::profile (
   include 'dconf'
 
   ensure_resource('file', $base_dir, {
-    'ensure' => 'directory',
-    'owner'  => 'root',
-    'group'  => 'root',
-    'mode'   => '0644',
-    require  => Class['dconf::install']
+      'ensure' => 'directory',
+      'owner'  => 'root',
+      'group'  => 'root',
+      'mode'   => '0644',
+      require  => Class['dconf::install']
   })
 
   ensure_resource('concat', "${base_dir}/${target}", {
-    'ensure' => 'present',
-    'order'  => 'numeric'
+      'ensure' => 'present',
+      'order'  => 'numeric'
   })
 
   $_default_order = 15
@@ -54,7 +51,7 @@ define dconf::profile (
     concat::fragment { "${module_name}::profile::${target}::${db_name}":
       target  => "${base_dir}/${target}",
       content => "${attrs['type']}-db:${db_name}\n",
-      order   => pick($attrs['order'], $_default_order)
+      order   => pick($attrs['order'], $_default_order),
     }
   }
 }
