@@ -1,6 +1,6 @@
 {
   "name": "simp-dconf",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": "SIMP Team",
   "summary": "Provides an interface to system DConf configuration",
   "license": "Apache-2.0",

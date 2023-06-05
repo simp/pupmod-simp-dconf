@@ -1,3 +1,6 @@
+* Mon Jun 05 2023 Chris Tessmer <chris.tessmer@onyxpoint.com> - 0.2.4
+- Added authselect parameter
+
 * Tue May 16 2023 Mike Riddle <mike@sicura.us> - 0.2.3
 - Added support for authselect
 - Added the tidy option to give the users an option to not purge
