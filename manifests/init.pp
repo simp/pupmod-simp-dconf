@@ -44,6 +44,7 @@ class dconf (
   Boolean                       $use_user_settings_defaults  = $use_user_profile_defaults,
   String[1]                     $user_settings_defaults_name = $user_profile_defaults_name,
   Boolean                       $tidy                        = true,
+  Boolean                       $authselect                  = simplib::lookup('simp_options::authselect', { 'default_value' => false }),
 ) {
   simplib::assert_metadata($module_name)
 
@@ -69,7 +70,7 @@ class dconf (
   }
 
   # If using authselect, the following files need to managed or there will be conflicts
-  if $simp_options::authselect {
+  if $authselect {
     file { '/etc/dconf/db/distro.d/20-authselect': }
     file { '/etc/dconf/db/distro.d/locks/20-authselect': }
   }
