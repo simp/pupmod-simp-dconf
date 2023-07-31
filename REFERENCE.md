@@ -16,13 +16,13 @@
 
 ### Defined types
 
-* [`dconf::profile`](#dconfprofile): Updates a ``dconf`` profile entry to ``/etc/dconf/profile/$name``
-* [`dconf::settings`](#dconfsettings): Add a dconf rule to the profile of your choice  This adds a configuration file to the /etc/dconf/db/<profile>.d directory. The dconf database
+* [`dconf::profile`](#dconf--profile): Updates a ``dconf`` profile entry to ``/etc/dconf/profile/$name``
+* [`dconf::settings`](#dconf--settings): Add a dconf rule to the profile of your choice  This adds a configuration file to the /etc/dconf/db/<profile>.d directory. The dconf database
 
 ### Data types
 
-* [`Dconf::DBSettings`](#dconfdbsettings): Valid dconf database settings
-* [`Dconf::SettingsHash`](#dconfsettingshash): Valid individual dconf settings
+* [`Dconf::DBSettings`](#Dconf--DBSettings): Valid dconf database settings
+* [`Dconf::SettingsHash`](#Dconf--SettingsHash): Valid individual dconf settings
 
 ## Classes
 
@@ -34,16 +34,18 @@ Manage 'dconf' and associated entries
 
 The following parameters are available in the `dconf` class:
 
-* [`user_profile`](#user_profile)
-* [`user_settings`](#user_settings)
-* [`package_ensure`](#package_ensure)
-* [`use_user_profile_defaults`](#use_user_profile_defaults)
-* [`user_profile_defaults_name`](#user_profile_defaults_name)
-* [`user_profile_target`](#user_profile_target)
-* [`use_user_settings_defaults`](#use_user_settings_defaults)
-* [`user_settings_defaults_name`](#user_settings_defaults_name)
+* [`user_profile`](#-dconf--user_profile)
+* [`user_settings`](#-dconf--user_settings)
+* [`package_ensure`](#-dconf--package_ensure)
+* [`use_user_profile_defaults`](#-dconf--use_user_profile_defaults)
+* [`user_profile_defaults_name`](#-dconf--user_profile_defaults_name)
+* [`user_profile_target`](#-dconf--user_profile_target)
+* [`use_user_settings_defaults`](#-dconf--use_user_settings_defaults)
+* [`user_settings_defaults_name`](#-dconf--user_settings_defaults_name)
+* [`tidy`](#-dconf--tidy)
+* [`authselect`](#-dconf--authselect)
 
-##### <a name="user_profile"></a>`user_profile`
+##### <a name="-dconf--user_profile"></a>`user_profile`
 
 Data type: `Dconf::DBSettings`
 
@@ -51,15 +53,15 @@ The contents of the default user profile that will be added
 
 @see data/common.yaml
 
-##### <a name="user_settings"></a>`user_settings`
+##### <a name="-dconf--user_settings"></a>`user_settings`
 
 Data type: `Optional[Dconf::SettingsHash]`
 
 Custom user settings that can be provided via Hiera globally
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="package_ensure"></a>`package_ensure`
+##### <a name="-dconf--package_ensure"></a>`package_ensure`
 
 Data type: `Simplib::PackageEnsure`
 
@@ -69,15 +71,15 @@ The version of `dconf` to install
 
 Default value: `simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' })`
 
-##### <a name="use_user_profile_defaults"></a>`use_user_profile_defaults`
+##### <a name="-dconf--use_user_profile_defaults"></a>`use_user_profile_defaults`
 
 Data type: `Boolean`
 
 Add the default `user_profile` settings to the system
 
-Default value: ``true``
+Default value: `true`
 
-##### <a name="user_profile_defaults_name"></a>`user_profile_defaults_name`
+##### <a name="-dconf--user_profile_defaults_name"></a>`user_profile_defaults_name`
 
 Data type: `String[1]`
 
@@ -86,7 +88,7 @@ The name that should be used for the custom `dconf::profile` in
 
 Default value: `'Defaults'`
 
-##### <a name="user_profile_target"></a>`user_profile_target`
+##### <a name="-dconf--user_profile_target"></a>`user_profile_target`
 
 Data type: `String[1]`
 
@@ -94,7 +96,7 @@ The name of the profile that should be targeted for the defaults
 
 Default value: `'user'`
 
-##### <a name="use_user_settings_defaults"></a>`use_user_settings_defaults`
+##### <a name="-dconf--use_user_settings_defaults"></a>`use_user_settings_defaults`
 
 Data type: `Boolean`
 
@@ -102,7 +104,7 @@ Enable creation of custom `dconf::settings` based on the `user_settings` Hash
 
 Default value: `$use_user_profile_defaults`
 
-##### <a name="user_settings_defaults_name"></a>`user_settings_defaults_name`
+##### <a name="-dconf--user_settings_defaults_name"></a>`user_settings_defaults_name`
 
 Data type: `String[1]`
 
@@ -111,9 +113,26 @@ the target profile for those settings
 
 Default value: `$user_profile_defaults_name`
 
+##### <a name="-dconf--tidy"></a>`tidy`
+
+Data type: `Boolean`
+
+If set to true, any files in the profile directory that aren't managed by puppet
+will be purged
+
+Default value: `true`
+
+##### <a name="-dconf--authselect"></a>`authselect`
+
+Data type: `Boolean`
+
+
+
+Default value: `simplib::lookup('simp_options::authselect', { 'default_value' => false })`
+
 ## Defined types
 
-### <a name="dconfprofile"></a>`dconf::profile`
+### <a name="dconf--profile"></a>`dconf::profile`
 
 Updates a ``dconf`` profile entry to ``/etc/dconf/profile/$name``
 
@@ -125,25 +144,16 @@ Updates a ``dconf`` profile entry to ``/etc/dconf/profile/$name``
 
 The following parameters are available in the `dconf::profile` defined type:
 
-* [`name`](#name)
-* [`target`](#target)
-* [`entries`](#entries)
-* [`target`](#target)
-* [`base_dir`](#base_dir)
+* [`name`](#-dconf--profile--name)
+* [`entries`](#-dconf--profile--entries)
+* [`target`](#-dconf--profile--target)
+* [`base_dir`](#-dconf--profile--base_dir)
 
-##### <a name="name"></a>`name`
+##### <a name="-dconf--profile--name"></a>`name`
 
 A globally unique name for the entry
 
-##### <a name="target"></a>`target`
-
-Data type: `String[1]`
-
-The name of the profile file in ``base_dir``
-
-Default value: `$name`
-
-##### <a name="entries"></a>`entries`
+##### <a name="-dconf--profile--entries"></a>`entries`
 
 Data type: `Dconf::DBSettings`
 
@@ -160,13 +170,15 @@ One or entries in the following Hash format:
   * System DB => Between 11 and 39
   * Distro DB => 40
 
-##### <a name="target"></a>`target`
+##### <a name="-dconf--profile--target"></a>`target`
+
+Data type: `String[1]`
 
 The target directory within which to create the profile
 
 Default value: `$name`
 
-##### <a name="base_dir"></a>`base_dir`
+##### <a name="-dconf--profile--base_dir"></a>`base_dir`
 
 Data type: `Stdlib::AbsolutePath`
 
@@ -174,7 +186,7 @@ The base directory that will hold the resulting file
 
 Default value: `'/etc/dconf/profile'`
 
-### <a name="dconfsettings"></a>`dconf::settings`
+### <a name="dconf--settings"></a>`dconf::settings`
 
 Add a dconf rule to the profile of your choice
 
@@ -186,12 +198,12 @@ lock a value so that general users cannot change it.
 
 The following parameters are available in the `dconf::settings` defined type:
 
-* [`settings_hash`](#settings_hash)
-* [`profile`](#profile)
-* [`ensure`](#ensure)
-* [`base_dir`](#base_dir)
+* [`settings_hash`](#-dconf--settings--settings_hash)
+* [`profile`](#-dconf--settings--profile)
+* [`ensure`](#-dconf--settings--ensure)
+* [`base_dir`](#-dconf--settings--base_dir)
 
-##### <a name="settings_hash"></a>`settings_hash`
+##### <a name="-dconf--settings--settings_hash"></a>`settings_hash`
 
 Data type: `Dconf::SettingsHash`
 
@@ -208,15 +220,15 @@ each setting like in the exmaple
 
 Default value: `{}`
 
-##### <a name="profile"></a>`profile`
+##### <a name="-dconf--settings--profile"></a>`profile`
 
 Data type: `Optional[String[1]]`
 
 The dconf profile where you want to place the key/value.
 
-Default value: ``undef``
+Default value: `undef`
 
-##### <a name="ensure"></a>`ensure`
+##### <a name="-dconf--settings--ensure"></a>`ensure`
 
 Data type: `Enum['present','absent']`
 
@@ -224,7 +236,7 @@ Ensure the entire settings Hash is present or absent
 
 Default value: `'present'`
 
-##### <a name="base_dir"></a>`base_dir`
+##### <a name="-dconf--settings--base_dir"></a>`base_dir`
 
 Data type: `Stdlib::AbsolutePath`
 
@@ -234,7 +246,7 @@ Default value: `'/etc/dconf/db'`
 
 ## Data types
 
-### <a name="dconfdbsettings"></a>`Dconf::DBSettings`
+### <a name="Dconf--DBSettings"></a>`Dconf::DBSettings`
 
 Valid dconf database settings
 
@@ -247,7 +259,7 @@ Hash[String[1], Struct[{
   }]]
 ```
 
-### <a name="dconfsettingshash"></a>`Dconf::SettingsHash`
+### <a name="Dconf--SettingsHash"></a>`Dconf::SettingsHash`
 
 Valid individual dconf settings
 
