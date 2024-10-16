@@ -1,3 +1,6 @@
+* Wed Oct 16 2024 Mike Riddle <mike@sicura.us> - 0.6.0
+- Migrated ensure_packages to stdlib::ensure_packages
+
 * Mon Oct 23 2023 Steven Pritchard <steve@sicura.us> - 0.5.0
 - [puppetsync] Add EL9 support
 
