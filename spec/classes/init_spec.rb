@@ -15,19 +15,19 @@ describe 'dconf' do
           {
             'user' => {
               'type'  => 'user',
-              'order' => 1
+              'order' => 1,
             },
             'local' => {
               'type'  => 'system',
-              'order' => 20
+              'order' => 20,
             },
             'site' => {
               'type'  => 'system',
-              'order' => 30
+              'order' => 30,
             },
             'distro' => {
               'type'  => 'system',
-              'order' => 40
+              'order' => 40,
             }
           },
         )
@@ -39,7 +39,7 @@ describe 'dconf' do
             user_settings: {
               'org/gnome/desktop/media-handling' => {
                 'automount' => { 'value' => false, 'lock' => false },
-                'automount-open' => { 'value' => false }
+                'automount-open' => { 'value' => false },
               }
             }
           }
