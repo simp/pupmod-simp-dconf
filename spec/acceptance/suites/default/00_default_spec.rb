@@ -3,7 +3,7 @@ require 'spec_helper_acceptance'
 test_name 'dconf class'
 
 describe 'dconf class' do
-  let(:manifest) {
+  let(:manifest) do
     <<-EOS
       include '::dconf'
 
@@ -37,24 +37,24 @@ describe 'dconf class' do
         }
       }
     EOS
-  }
+  end
 
   hosts.each do |host|
     context "on #{host}" do
       # This is so that we actually have something to set
-      it 'should have gsettings-desktop-schemas installed' do
+      it 'has gsettings-desktop-schemas installed' do
         install_package(host, 'gsettings-desktop-schemas')
       end
 
-      it 'should work with no errors' do
-         apply_manifest_on(host, manifest, :catch_failures => true)
+      it 'works with no errors' do
+        apply_manifest_on(host, manifest, catch_failures: true)
       end
 
-      it 'should be idempotent' do
-        apply_manifest_on(host, manifest, {:catch_changes => true})
+      it 'is idempotent' do
+        apply_manifest_on(host, manifest, { catch_changes: true })
       end
 
-      it 'should have dconf installed' do
+      it 'has dconf installed' do
         expect(host.check_for_command('dconf')).to be true
       end
     end

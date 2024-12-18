@@ -13,35 +13,37 @@ describe 'dconf' do
       it {
         is_expected.to create_dconf__profile('Defaults').with_entries(
           {
-            'user'   => {
+            'user' => {
               'type'  => 'user',
-              'order' => 1
+              'order' => 1,
             },
-            'local'  => {
+            'local' => {
               'type'  => 'system',
-              'order' => 20
+              'order' => 20,
             },
-            'site'   => {
+            'site' => {
               'type'  => 'system',
-              'order' => 30
+              'order' => 30,
             },
             'distro' => {
               'type'  => 'system',
-              'order' => 40
+              'order' => 40,
             }
-          }
+          },
         )
       }
 
       context 'with custom user settings' do
-        let(:params) {{
-          :user_settings => {
-            'org/gnome/desktop/media-handling' => {
-              'automount' => { 'value' => false, 'lock' => false },
-              'automount-open' => { 'value' => false }
+        let(:params) do
+          {
+            user_settings: {
+              'org/gnome/desktop/media-handling' => {
+                'automount' => { 'value' => false, 'lock' => false },
+                'automount-open' => { 'value' => false },
+              }
             }
           }
-        }}
+        end
 
         it { is_expected.to compile.with_all_deps }
         it { is_expected.to create_dconf__settings('Defaults').with_settings_hash(params[:user_settings]) }
