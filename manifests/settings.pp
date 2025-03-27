@@ -16,6 +16,9 @@
 #       }
 #     }
 #
+# @param key_val_separator
+#   The character(s) that should be placed between the key and value, default will be '='.
+#
 # @param profile
 #   The dconf profile where you want to place the key/value.
 #
@@ -26,10 +29,11 @@
 #   The database base directory. This probably shouldn't be changed.
 #
 define dconf::settings (
-  Dconf::SettingsHash      $settings_hash = {},
-  Optional[String[1]]      $profile       = undef,
-  Enum['present','absent'] $ensure        = 'present',
-  Stdlib::AbsolutePath     $base_dir      = '/etc/dconf/db',
+  Dconf::SettingsHash      $settings_hash     = {},
+  Optional[String[1]]      $profile           = undef,
+  String                   $key_val_separator = '=',
+  Enum['present','absent'] $ensure            = 'present',
+  Stdlib::AbsolutePath     $base_dir          = '/etc/dconf/db',
 ) {
   include 'dconf'
 
@@ -68,12 +72,13 @@ define dconf::settings (
   $_lock_content = flatten($settings_hash.map |$_schema, $_settings| {
       $_settings.keys.each |$_key| {
         ini_setting { "${_target} [${_schema}] ${_key}":
-          ensure  => $ensure,
-          path    => $_target,
-          section => $_schema,
-          setting => $_key,
-          value   => $_settings[$_key]['value'],
-          notify  => Exec["dconf update ${title}"],
+          ensure            => $ensure,
+          path              => $_target,
+          section           => $_schema,
+          setting           => $_key,
+          value             => $_settings[$_key]['value'],
+          key_val_separator => $key_val_separator,
+          notify            => Exec["dconf update ${title}"],
         }
       }
 

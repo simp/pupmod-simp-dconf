@@ -199,6 +199,7 @@ lock a value so that general users cannot change it.
 The following parameters are available in the `dconf::settings` defined type:
 
 * [`settings_hash`](#-dconf--settings--settings_hash)
+* [`key_val_separator`](#-dconf--settings--key_val_separator)
 * [`profile`](#-dconf--settings--profile)
 * [`ensure`](#-dconf--settings--ensure)
 * [`base_dir`](#-dconf--settings--base_dir)
@@ -219,6 +220,14 @@ each setting like in the exmaple
   }
 
 Default value: `{}`
+
+##### <a name="-dconf--settings--key_val_separator"></a>`key_val_separator`
+
+Data type: `String`
+
+The character(s) that should be placed between the key and value, default will be '='.
+
+Default value: `'='`
 
 ##### <a name="-dconf--settings--profile"></a>`profile`
 
