@@ -1,3 +1,8 @@
+* Thu May 08 2025 Richard Gardner <rick@sicura-us> - 1.0.0
+- Remove EOL OS's support (EL7, CentOS8)
+- Stardardize beaker nodesets
+- beaker test improvements
+
 * Thu Mar 27 2025 Mike Riddle <mike@sicura.us> - 0.6.0
 - Fixed the character separator in dconf settings from ' = ' to '='
 

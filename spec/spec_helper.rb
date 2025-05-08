@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 #
 # ------------------------------------------------------------------------------
 #         NOTICE: **This file is maintained with puppetsync**
@@ -87,7 +86,7 @@ RSpec.configure do |c|
   # If nothing else...
   c.default_facts = {
     production: {
-      # :fqdn           => 'production.rspec.test.localdomain',
+      #:fqdn           => 'production.rspec.test.localdomain',
       path: '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin',
       concat_basedir: '/tmp'
     }
@@ -97,7 +96,6 @@ RSpec.configure do |c|
   c.mock_with :rspec
 
   c.module_path = File.join(fixture_path, 'modules')
-  c.manifest_dir = File.join(fixture_path, 'manifests') if c.respond_to?(:manifest_dir)
 
   c.hiera_config = File.join(fixture_path, 'hieradata', 'hiera.yaml')
 
@@ -148,9 +146,9 @@ RSpec.configure do |c|
 
     # sanitize hieradata
     if defined?(hieradata)
-      set_hieradata(hieradata.tr(':', '_'))
+      set_hieradata(hieradata.gsub(':', '_'))
     elsif defined?(class_name)
-      set_hieradata(class_name.tr(':', '_'))
+      set_hieradata(class_name.gsub(':', '_'))
     end
   end
 
@@ -162,7 +160,9 @@ RSpec.configure do |c|
 end
 
 Dir.glob("#{RSpec.configuration.module_path}/*").each do |dir|
-  Pathname.new(dir).realpath
-rescue StandardError
-  raise "ERROR: The module '#{dir}' is not installed. Tests cannot continue."
+  begin
+    Pathname.new(dir).realpath
+  rescue StandardError
+    raise "ERROR: The module '#{dir}' is not installed. Tests cannot continue."
+  end
 end
