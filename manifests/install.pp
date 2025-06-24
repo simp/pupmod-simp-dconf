@@ -4,5 +4,5 @@
 class dconf::install {
   assert_private()
 
-  ensure_packages( 'dconf', { 'ensure' => $dconf::package_ensure } )
+  stdlib::ensure_packages( 'dconf', { 'ensure' => $dconf::package_ensure })
 }

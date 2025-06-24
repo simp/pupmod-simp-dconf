@@ -1,6 +1,6 @@
 {
   "name": "simp-dconf",
-  "version": "0.6.0",
+  "version": "1.0.0",
   "author": "SIMP Team",
   "summary": "Provides an interface to system DConf configuration",
   "license": "Apache-2.0",
@@ -13,10 +13,6 @@
     "desktop"
   ],
   "dependencies": [
-    {
-      "name": "simp/simplib",
-      "version_requirement": ">= 4.9.0 < 5.0.0"
-    },
     {
       "name": "simp/simp_options",
       "version_requirement": ">= 1.6.1 < 2.0.0"
@@ -36,23 +32,22 @@
     {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
-        "7",
         "8",
-        "9"
+        "9",
+        "10"
       ]
     },
     {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "7",
         "8",
-        "9"
+        "9",
+        "10"
       ]
     },
     {
       "operatingsystem": "OracleLinux",
       "operatingsystemrelease": [
-        "7",
         "8",
         "9"
       ]
@@ -61,7 +56,8 @@
       "operatingsystem": "AlmaLinux",
       "operatingsystemrelease": [
         "8",
-        "9"
+        "9",
+        "10"
       ]
     },
     {

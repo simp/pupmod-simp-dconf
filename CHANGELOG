@@ -1,3 +1,9 @@
+* Tue Jun 24 2025 Mike Riddle <mike@sicura.us> - 1.0.0
+- Removed support for el7
+- Added support for el10
+- Added docker beaker nodesets
+- Removed dependency on simplib
+
 * Thu Mar 27 2025 Mike Riddle <mike@sicura.us> - 0.6.0
 - Fixed the character separator in dconf settings from ' = ' to '='
 
