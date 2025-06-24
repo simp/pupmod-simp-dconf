@@ -34,20 +34,21 @@
 #   If set to true, any files in the profile directory that aren't managed by puppet
 #   will be purged
 #
+# @param authselect
+#   Flip this parameter to true if you are using authselect and receiving resource
+#   conflicts
 class dconf (
   Dconf::DBSettings             $user_profile,
   Optional[Dconf::SettingsHash] $user_settings               = undef,
-  Simplib::PackageEnsure        $package_ensure              = simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' }),
+  Variant[String[1],Boolean]    $package_ensure              = 'installed',
   Boolean                       $use_user_profile_defaults   = true,
   String[1]                     $user_profile_defaults_name  = 'Defaults',
   String[1]                     $user_profile_target         = 'user',
   Boolean                       $use_user_settings_defaults  = $use_user_profile_defaults,
   String[1]                     $user_settings_defaults_name = $user_profile_defaults_name,
   Boolean                       $tidy                        = true,
-  Boolean                       $authselect                  = simplib::lookup('simp_options::authselect', { 'default_value' => false }),
+  Boolean                       $authselect                  = false,
 ) {
-  simplib::assert_metadata($module_name)
-
   include 'dconf::install'
 
   if $use_user_profile_defaults {

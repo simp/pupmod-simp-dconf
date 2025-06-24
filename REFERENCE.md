@@ -63,13 +63,13 @@ Default value: `undef`
 
 ##### <a name="-dconf--package_ensure"></a>`package_ensure`
 
-Data type: `Simplib::PackageEnsure`
+Data type: `Variant[String[1],Boolean]`
 
 The version of `dconf` to install
 
 * Accepts any valid `ensure` parameter value for the `package` resource
 
-Default value: `simplib::lookup('simp_options::package_ensure', { 'default_value' => 'installed' })`
+Default value: `'installed'`
 
 ##### <a name="-dconf--use_user_profile_defaults"></a>`use_user_profile_defaults`
 
@@ -126,9 +126,10 @@ Default value: `true`
 
 Data type: `Boolean`
 
+Flip this parameter to true if you are using authselect and receiving resource
+conflicts
 
-
-Default value: `simplib::lookup('simp_options::authselect', { 'default_value' => false })`
+Default value: `false`
 
 ## Defined types
 

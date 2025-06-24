@@ -55,7 +55,8 @@ describe 'dconf class' do
       end
 
       it 'has dconf installed' do
-        expect(host.check_for_command('dconf')).to be true
+        result = on(host, 'rpm -q dconf', accept_all_exit_codes: true)
+        expect(result.exit_code).to eq(0), "Expected package 'dconf' to be installed"
       end
     end
   end
