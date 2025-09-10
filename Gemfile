@@ -13,7 +13,7 @@ gem_sources.each { |gem_source| source gem_source }
 group :syntax do
   gem 'metadata-json-lint'
   gem 'puppet-lint-trailing_comma-check', require: false
-  gem 'rubocop', '~> 1.68.0'
+  gem 'rubocop', '~> 1.80.0'
   gem 'rubocop-performance', '~> 1.23.0'
   gem 'rubocop-rake', '~> 0.6.0'
   gem 'rubocop-rspec', '~> 3.2.0'
@@ -46,7 +46,7 @@ group :system_tests do
   gem 'beaker'
   gem 'beaker_puppet_helpers'
   gem 'beaker-rspec'
-  gem 'simp-beaker-helpers', ENV.fetch('SIMP_BEAKER_HELPERS_VERSION', ['>= 1.32.1', '< 2'])
+  gem 'simp-beaker-helpers', ENV.fetch('SIMP_BEAKER_HELPERS_VERSION', '~> 2.0.0')
 end
 
 # Evaluate extra gemfiles if they exist
