@@ -1,3 +1,6 @@
+* Tue May 12 2026 Steven Pritchard <steve@sicura.us> - 1.0.1
+- Support Oracle/Rocky 10
+
 * Tue Jun 24 2025 Mike Riddle <mike@sicura.us> - 1.0.0
 - Removed support for el7
 - Added support for el10
