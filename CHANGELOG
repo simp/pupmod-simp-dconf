@@ -1,5 +1,8 @@
 * Tue May 12 2026 Steven Pritchard <steve@sicura.us> - 1.0.1
-- Support Oracle/Rocky 10
+- Add Oracle Linux 10 and Rocky Linux 10 support
+- Drop support for end-of-life platforms (Amazon Linux 2, CentOS 8)
+- Switch default acceptance nodeset to EL10 (Rocky 10)
+- Default the Beaker puppet_collection to openvox8 across all nodesets
 
 * Tue Jun 24 2025 Mike Riddle <mike@sicura.us> - 1.0.0
 - Removed support for el7
