@@ -1,14 +1,15 @@
 ---
 HOSTS:
-  el8:
-    platform: el-8-x86_64
-    box: generic/rocky8
+  el10:
+    platform: el-10-x86_64
+    box: rockylinux/10
     hypervisor: "<%= ENV.fetch('BEAKER_HYPERVISOR', 'vagrant') %>"
-    family: rocky-linux-cloud/rocky-linux-8
-    gce_machine_type: n1-standard-2
+    # There are not currently any el10 images available on google cloud
+    # family: rocky-linux-cloud/rocky-linux-10
+    # gce_machine_type: n1-standard-2
 CONFIG:
   log_level: verbose
   vagrant_cpus: 2
   type: aio
   multi_node: false
-  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'puppet7') %>"
+  puppet_collection: "<%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'openvox8') %>"
