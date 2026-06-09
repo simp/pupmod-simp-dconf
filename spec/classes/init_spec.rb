@@ -28,7 +28,7 @@ describe 'dconf' do
             'distro' => {
               'type'  => 'system',
               'order' => 40,
-            }
+            },
           },
         )
       }
@@ -40,8 +40,8 @@ describe 'dconf' do
               'org/gnome/desktop/media-handling' => {
                 'automount' => { 'value' => false, 'lock' => false },
                 'automount-open' => { 'value' => false },
-              }
-            }
+              },
+            },
           }
         end
 
