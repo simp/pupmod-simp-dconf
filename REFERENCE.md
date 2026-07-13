@@ -53,6 +53,8 @@ The contents of the default user profile that will be added
 
 @see data/common.yaml
 
+Default value: `{ 'user' => { 'type' => 'user', 'order' => 1 }, 'local' => { 'type' => 'system', 'order' => 20 }, 'site' => { 'type' => 'system', 'order' => 30 }, 'distro' => { 'type' => 'system', 'order' => 40 } }`
+
 ##### <a name="-dconf--user_settings"></a>`user_settings`
 
 Data type: `Optional[Dconf::SettingsHash]`
