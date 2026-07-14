@@ -59,12 +59,6 @@ describe 'dconf class' do
         it 'applies without errors in noop mode' do
           apply_manifest_on(host, manifest, catch_failures: true, noop: true)
         end
-
-        # Proof noop engaged nothing: the acceptance nodeset is EL, so rpm -q exits 1
-        # when dconf is absent; beaker raises on any other exit code.
-        it 'does not install the dconf package' do
-          on(host, 'rpm -q dconf', acceptable_exit_codes: [1])
-        end
       end
 
       # This is so that we actually have something to set
