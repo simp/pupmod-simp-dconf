@@ -1,3 +1,21 @@
+* Wed Sep 02 2026 Hazel Caballero <hazel@sicura.us> - 3.0.0
+- Reduce blast radius: a bare `include dconf` now only installs the package
+  - `user_profile` is now `Optional` and defaults to `undef`; the default
+    user/local/site/distro profile hierarchy was removed from data/common.yaml
+  - `tidy` now defaults to `false` (no purge of unmanaged files in managed
+    profile directories unless explicitly enabled)
+  - Removed the `use_user_profile_defaults` and `use_user_settings_defaults`
+    parameters; behavior is driven by `user_profile`/`user_settings` being set
+  - Removed the automatic `ensure => absent` cleanup of the default
+    `dconf::settings` when `user_settings` was unset
+- Add a `simp:defaults` compliance_engine profile that restores the pre-3.0.0
+  behavior (activate with `compliance_engine::enforcement: [simp:defaults]`)
+- `dconf::settings` with `ensure => absent` now removes the settings file
+  (previously it left an empty file behind)
+- Drop the unused `simp/simp_options` dependency; declare the previously
+  missing `puppetlabs/concat` and `puppetlabs/inifile` runtime dependencies
+- Document the on-disk layout the examples produce (fixes #67)
+
 * Mon Aug 24 2026 Steven Pritchard <steve@sicura.us> - 2.0.1
 - [puppetsync] Update metadata.json dependency ranges from the Forge
 

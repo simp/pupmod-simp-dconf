@@ -8,7 +8,7 @@
 
 #### Public Classes
 
-* [`dconf`](#dconf): Manage 'dconf' and associated entries
+* [`dconf`](#dconf): Manage 'dconf' and associated entries  A bare `include dconf` only installs the `dconf` package. All other behavior is opt-in: set `user_prof
 
 #### Private Classes
 
@@ -30,6 +30,11 @@
 
 Manage 'dconf' and associated entries
 
+A bare `include dconf` only installs the `dconf` package. All other
+behavior is opt-in: set `user_profile` and/or `user_settings` directly, or
+enforce the shipped `simp:defaults` compliance profile to restore the
+pre-3.0.0 defaults.
+
 #### Parameters
 
 The following parameters are available in the `dconf` class:
@@ -37,29 +42,33 @@ The following parameters are available in the `dconf` class:
 * [`user_profile`](#-dconf--user_profile)
 * [`user_settings`](#-dconf--user_settings)
 * [`package_ensure`](#-dconf--package_ensure)
-* [`use_user_profile_defaults`](#-dconf--use_user_profile_defaults)
 * [`user_profile_defaults_name`](#-dconf--user_profile_defaults_name)
 * [`user_profile_target`](#-dconf--user_profile_target)
-* [`use_user_settings_defaults`](#-dconf--use_user_settings_defaults)
 * [`user_settings_defaults_name`](#-dconf--user_settings_defaults_name)
 * [`tidy`](#-dconf--tidy)
 * [`authselect`](#-dconf--authselect)
 
 ##### <a name="-dconf--user_profile"></a>`user_profile`
 
-Data type: `Dconf::DBSettings`
+Data type: `Optional[Dconf::DBSettings]`
 
 The contents of the default user profile that will be added
 
-@see data/common.yaml
+* When set, a `dconf::profile` named `$user_profile_defaults_name` is
+  created targeting `$user_profile_target`
+* When `undef` (the default), no profile entries are managed
 
-Default value: `{ 'user' => { 'type' => 'user', 'order' => 1 }, 'local' => { 'type' => 'system', 'order' => 20 }, 'site' => { 'type' => 'system', 'order' => 30 }, 'distro' => { 'type' => 'system', 'order' => 40 } }`
+Default value: `undef`
 
 ##### <a name="-dconf--user_settings"></a>`user_settings`
 
 Data type: `Optional[Dconf::SettingsHash]`
 
 Custom user settings that can be provided via Hiera globally
+
+* When set, a `dconf::settings` named `$user_settings_defaults_name` is
+  created
+* When `undef` (the default), no settings are managed
 
 Default value: `undef`
 
@@ -72,14 +81,6 @@ The version of `dconf` to install
 * Accepts any valid `ensure` parameter value for the `package` resource
 
 Default value: `'installed'`
-
-##### <a name="-dconf--use_user_profile_defaults"></a>`use_user_profile_defaults`
-
-Data type: `Boolean`
-
-Add the default `user_profile` settings to the system
-
-Default value: `true`
 
 ##### <a name="-dconf--user_profile_defaults_name"></a>`user_profile_defaults_name`
 
@@ -98,14 +99,6 @@ The name of the profile that should be targeted for the defaults
 
 Default value: `'user'`
 
-##### <a name="-dconf--use_user_settings_defaults"></a>`use_user_settings_defaults`
-
-Data type: `Boolean`
-
-Enable creation of custom `dconf::settings` based on the `user_settings` Hash
-
-Default value: `$use_user_profile_defaults`
-
 ##### <a name="-dconf--user_settings_defaults_name"></a>`user_settings_defaults_name`
 
 Data type: `String[1]`
@@ -119,17 +112,22 @@ Default value: `$user_profile_defaults_name`
 
 Data type: `Boolean`
 
-If set to true, any files in the profile directory that aren't managed by puppet
-will be purged
+If set to true, any files in the profile directories managed by
+`dconf::settings` that aren't managed by puppet will be purged
 
-Default value: `true`
+* WARNING: This is destructive - it removes drop-in files placed by the
+  OS, other modules, or administrators. It is disabled by default and
+  should only be enabled deliberately (the `simp:defaults` profile
+  restores the pre-3.0.0 value of `true`)
+
+Default value: `false`
 
 ##### <a name="-dconf--authselect"></a>`authselect`
 
 Data type: `Boolean`
 
-Flip this parameter to true if you are using authselect and receiving resource
-conflicts
+Flip this parameter to true if you are using authselect and receiving
+resource conflicts
 
 Default value: `false`
 
@@ -245,6 +243,8 @@ Default value: `undef`
 Data type: `Enum['present','absent']`
 
 Ensure the entire settings Hash is present or absent
+
+* `absent` removes the settings file and its lock file
 
 Default value: `'present'`
 

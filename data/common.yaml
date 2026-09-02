@@ -1,20 +1,11 @@
 ---
-lookup_options:
-  dconf::user_profile:
-    merge:
-      strategy: deep
-      knockout_prefix: --
-
-dconf::user_profile:
-  user:
-    type: user
-    order: 1
-  local:
-    type: system
-    order: 20
-  site:
-    type: system
-    order: 30
-  distro:
-    type: system
-    order: 40
+# As of 3.0.0 this module ships no default data: a bare `include dconf` only
+# installs the package.
+#
+# The pre-3.0.0 default `dconf::user_profile` hierarchy (user/local/site/distro)
+# now lives in the `simp:defaults` compliance profile
+# (SIMP/compliance_profiles/checks.yaml). Enforce it with:
+#
+#   compliance_engine::enforcement:
+#     - simp:defaults
+{}

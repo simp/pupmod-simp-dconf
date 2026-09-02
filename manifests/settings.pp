@@ -25,6 +25,8 @@
 # @param ensure
 #   Ensure the entire settings Hash is present or absent
 #
+#   * `absent` removes the settings file and its lock file
+#
 # @param base_dir
 #   The database base directory. This probably shouldn't be changed.
 #
@@ -40,11 +42,11 @@ define dconf::settings (
   if $profile {
     $_profile = $profile
   }
-  elsif $dconf::use_user_profile_defaults {
+  elsif $dconf::user_profile =~ NotUndef {
     $_profile = $dconf::user_profile_defaults_name
   }
   else {
-    fail("You must specifiy a '${profile}' for '${title}'")
+    fail("dconf::settings[${title}]: you must specify 'profile' when 'dconf::user_profile' is not set")
   }
 
   $_name = regsubst($name.downcase, '( |/|!|@|#|\$|%|\^|&|\*|[|])', '_', 'G')
@@ -62,8 +64,13 @@ define dconf::settings (
       require   => Class['dconf::install']
   })
 
+  $_target_ensure = $ensure ? {
+    'absent' => 'absent',
+    default  => 'file',
+  }
+
   ensure_resource('file', $_target, {
-      'ensure' => 'file',
+      'ensure' => $_target_ensure,
       'owner'  => 'root',
       'group'  => 'root',
       'mode'   => '0644'

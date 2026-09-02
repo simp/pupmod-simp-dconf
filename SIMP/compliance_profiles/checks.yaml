@@ -1,0 +1,40 @@
+# Sicura Compliance Engine checks that restore the dconf configuration this
+# module managed by default *before* the v3 blast-radius refactor (where a
+# bare `include dconf` installs only the package). One
+# `puppet-class-parameter` check per restored `dconf` parameter; the
+# `simp:defaults` profile lists them directly (see
+# profile-simp_defaults.yaml).
+#
+# Scope is intentionally limited to this module's own parameters. No
+# `confine:` splits are needed - the pre-3.0.0 defaults were identical on
+# every supported OS (data/common.yaml only).
+#
+# Note: `simp:defaults.dconf.tidy` deliberately restores the *destructive*
+# pre-3.0.0 purge of unmanaged files in managed profile directories. Sites
+# that want the profile without the purge should override `dconf::tidy:
+# false` in their own Hiera, which outranks this profile.
+---
+version: 2.0.0
+checks:
+  simp:defaults.dconf.user_profile:
+    type: puppet-class-parameter
+    settings:
+      parameter: dconf::user_profile
+      value:
+        user:
+          type: user
+          order: 1
+        local:
+          type: system
+          order: 20
+        site:
+          type: system
+          order: 30
+        distro:
+          type: system
+          order: 40
+  simp:defaults.dconf.tidy:
+    type: puppet-class-parameter
+    settings:
+      parameter: dconf::tidy
+      value: true
