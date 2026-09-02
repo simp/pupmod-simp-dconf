@@ -8,6 +8,7 @@
 <!-- vim-markdown-toc GFM -->
 
 * [Description](#description)
+  * [How it works](#how-it-works)
   * [This is a SIMP module](#this-is-a-simp-module)
 * [Breaking changes in 3.0.0](#breaking-changes-in-300)
 * [Setup](#setup)
@@ -29,8 +30,28 @@
 
 ## Description
 
-`dconf` is a Puppet module that installs and manages `dconf` and associated
-system settings.
+`dconf` is a Puppet module that installs and manages
+[`dconf`](https://wiki.gnome.org/Projects/dconf) - the low-level configuration
+system used by GNOME and other desktop components on Enterprise Linux. Its main
+hardening value is the **lock** mechanism: a locked key cannot be changed by
+the logged-in user, which is how screensaver, media-automount, and similar
+settings get enforced.
+
+### How it works
+
+The module manages three things:
+
+1. **The `dconf` package** - all that a bare `include dconf` does.
+2. **dconf profiles** (`/etc/dconf/profile/*`) - the ordered list of databases
+   consulted for a session. Managed by the `dconf::profile` defined type
+   (one `concat` fragment per database entry, sorted by `order`), or globally
+   via the `dconf::user_profile` class parameter.
+3. **dconf settings and locks** (`/etc/dconf/db/<profile>.d/*`) - the
+   key/value rules written into a database, plus a companion `locks/` file for
+   every key not explicitly `lock => false`. Managed by the `dconf::settings`
+   defined type (or globally via `dconf::user_settings`). Whenever a settings
+   or lock file changes, the module runs `dconf update` to rebuild the binary
+   database that sessions actually read.
 
 ### This is a SIMP module
 
@@ -213,6 +234,33 @@ system-db:system
 The Hiera `dconf::user_profile` variant writes `/etc/dconf/profile/user`
 (the `dconf::user_profile_target`, default `user`) the same way.
 
+`dconf::user_profile` is looked up with a **deep merge** (set in the module's
+`data/common.yaml`), so values from different Hiera levels **merge rather than
+replace** each other. To extend a profile set at a lower level, only list your
+additions or the fields you want to change:
+
+```yaml
+---
+dconf::user_profile:
+  company:        # added to whatever the lower level defined
+    type: system
+    order: 25
+  site:
+    order: 35     # tweaks just this field of the lower level's 'site' entry
+```
+
+Note that a database **cannot be removed** through the merge: the configured
+`--` knockout prefix only blanks an entry's value, which the
+`Dconf::DBSettings` type then rejects. To fully replace the hash instead of
+merging, override the lookup behavior in your own Hiera:
+
+```yaml
+---
+lookup_options:
+  dconf::user_profile:
+    merge: first
+```
+
 ### Restoring the pre-3.0.0 behavior (`simp:defaults`)
 
 The module ships a `simp:defaults` [Sicura Compliance Engine](https://github.com/simp/rubygem-simp-compliance_engine)
@@ -242,6 +290,12 @@ compliance_engine::enforcement:
   - simp:defaults
 dconf::tidy: false
 ```
+
+Because `dconf::user_profile` deep-merges (see
+[Configuring custom profiles](#globally-with-hiera)), the same applies to the
+restored database hierarchy: a partial `dconf::user_profile` hash in your own
+Hiera extends or tweaks the profile's user/local/site/distro value rather than
+replacing it.
 
 ## Reference
 

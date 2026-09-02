@@ -128,4 +128,42 @@ describe 'dconf' do
       end
     end
   end
+
+  # --------------------------------------------------------------------------
+  # Enforced + partial site user_profile: the deep-merge lookup_options in
+  # data/common.yaml must merge the site's partial hash with the profile's
+  # restored hierarchy instead of replacing it. (The configured `--` knockout
+  # prefix cannot REMOVE an entry from this hash: it only blanks the value,
+  # which Dconf::DBSettings rejects - so removal is deliberately not tested.)
+  # --------------------------------------------------------------------------
+  context 'when enforcing simp:defaults with a partial site user_profile' do
+    let(:hiera_config) do
+      File.expand_path('../fixtures/hieradata/hiera_compliance_engine.yaml', __dir__)
+    end
+
+    on_supported_os.each do |os, os_facts|
+      context "on #{os}" do
+        let(:facts) { os_facts.merge(custom_hiera: 'simp_defaults_with_extension') }
+
+        it { is_expected.to compile.with_all_deps }
+
+        it 'deep merges the site extension with the profile hierarchy' do
+          is_expected.to create_dconf__profile('Defaults').with_entries(
+            'user'    => { 'type' => 'user',   'order' => 1 },
+            'local'   => { 'type' => 'system', 'order' => 20 },
+            'company' => { 'type' => 'system', 'order' => 25 },
+            'site'    => { 'type' => 'system', 'order' => 35 },
+            'distro'  => { 'type' => 'system', 'order' => 40 },
+          )
+        end
+
+        it 'renders the added and tweaked databases at their merged orders' do
+          is_expected.to create_concat__fragment('dconf::profile::user::company')
+            .with(content: "system-db:company\n", order: 25)
+          is_expected.to create_concat__fragment('dconf::profile::user::site')
+            .with(content: "system-db:site\n", order: 35)
+        end
+      end
+    end
+  end
 end

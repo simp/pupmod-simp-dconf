@@ -2,6 +2,8 @@
 - Reduce blast radius: a bare `include dconf` now only installs the package
   - `user_profile` is now `Optional` and defaults to `undef`; the default
     user/local/site/distro profile hierarchy was removed from data/common.yaml
+    (the deep-merge lookup_options for `user_profile` are retained, so site
+    Hiera values still merge across levels)
   - `tidy` now defaults to `false` (no purge of unmanaged files in managed
     profile directories unless explicitly enabled)
   - Removed the `use_user_profile_defaults` and `use_user_settings_defaults`

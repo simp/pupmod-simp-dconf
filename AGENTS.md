@@ -21,29 +21,36 @@ modules) whose main compliance value is the **lock** mechanism: a locked key
 cannot be changed by the logged-in user, which is how screensaver/idle-lock,
 media-automount, and similar STIG-type settings get enforced.
 
+**As of 3.0.0 (blast-radius refactor), a bare `include dconf` only installs the
+package.** Profiles and settings are opt-in via parameters, and the pre-3.0.0
+defaults live in the `simp:defaults` Sicura Compliance Engine profile
+(`SIMP/compliance_profiles/`), activated with Hiera
+`compliance_engine::enforcement: [simp:defaults]`.
+
 ### Business logic
 
 **`dconf` (`manifests/init.pp`)** — the public entry point and the single source
 of shared state (`dconf::install`, `dconf::profile`, and `dconf::settings` all
 `include 'dconf'` to read its parameters).
 
-- **`user_profile`** (`Dconf::DBSettings`, **required**) — the databases that
-  make up the default user profile. Its real value comes from Hiera
-  (`data/common.yaml`) as a deep-merge map: `user` (order 1), `local` (system,
-  20), `site` (system, 30), `distro` (system, 40). When
-  `use_user_profile_defaults` (default `true`), this is rendered into a
-  `dconf::profile` named by `user_profile_defaults_name` (default `Defaults`)
-  targeting `user_profile_target` (default `user`).
-- **`user_settings`** (`Optional[Dconf::SettingsHash]`) — global settings to push
-  via Hiera. If set **and** `use_user_settings_defaults` (defaults to
-  `use_user_profile_defaults`), a `dconf::settings` resource named
-  `user_settings_defaults_name` is created; otherwise that same-named
-  `dconf::settings` is declared `ensure => absent` (so toggling the flag cleans
-  up previously-managed settings).
-- **`tidy`** (default `true`) — propagates to `purge => true` on the managed
-  `*.d` and `locks` directories in `dconf::settings`, so **unmanaged files in a
-  managed profile directory are removed**. This is a footgun if another module or
-  an admin drops files there.
+- **`user_profile`** (`Optional[Dconf::DBSettings]`, default `undef`) — the
+  databases that make up the default user profile. When set, it is rendered
+  into a `dconf::profile` named by `user_profile_defaults_name` (default
+  `Defaults`) targeting `user_profile_target` (default `user`). The module
+  ships **no default value**; the pre-3.0.0 user (1) / local (system, 20) /
+  site (system, 30) / distro (system, 40) hierarchy is restored by the
+  `simp:defaults` compliance profile. `data/common.yaml` retains deep-merge
+  `lookup_options` (`knockout_prefix: '--'`) for this key, so Hiera values
+  merge across levels rather than replace.
+- **`user_settings`** (`Optional[Dconf::SettingsHash]`, default `undef`) —
+  global settings to push via Hiera. When set, a `dconf::settings` resource
+  named `user_settings_defaults_name` is created. When unset, nothing is
+  declared (the pre-3.0.0 `ensure => absent` cleanup resource is gone).
+- **`tidy`** (default `false`) — propagates to `purge` on the managed
+  `*.d` and `locks` directories in `dconf::settings`. When `true`, **unmanaged
+  files in a managed profile directory are removed** — a footgun if another
+  module or an admin drops files there, which is why 3.0.0 flipped the default
+  off (the `simp:defaults` profile turns it back on).
 - **`authselect`** (default `false`) — when using authselect you can hit resource
   conflicts on `/etc/dconf/db/distro.d/20-authselect` (+ its `locks/` twin);
   flipping this true declares (empty) `file` resources so Puppet "owns" them and
@@ -59,8 +66,9 @@ else.
 `${base_dir}/${target}` (default base `/etc/dconf/profile`) via **`concat`**. Each
 entry in `$entries` (a `Dconf::DBSettings` hash) becomes a `concat::fragment`
 emitting a `<type>-db:<db_name>` line, ordered by the entry's `order`
-(**default 15** via `pick`). The shipped `data/common.yaml` orders the databases
-user `1`, local `20`, site `30`, distro `40` (lower = higher priority). **Note the
+(**default 15** via `pick`). The `simp:defaults` compliance profile orders the
+databases user `1`, local `20`, site `30`, distro `40` (lower = higher
+priority). **Note the
 type forbids `0`:** `order` is declared `Optional[Integer[1]]`, so `profile.pp`'s
 docstring (example `order: 0`, "User DB => 0 / SIMP DB => 10 / System DB =>
 11–39") is inconsistent with what the type actually accepts — the minimum valid
@@ -70,7 +78,7 @@ order is `1`.
 given profile it:
 
 - Resolves the target profile: explicit `$profile` → else
-  `$dconf::user_profile_defaults_name` when `use_user_profile_defaults` → else
+  `$dconf::user_profile_defaults_name` when `dconf::user_profile` is set → else
   `fail()`.
 - Sanitizes the resource title into a filename (`regsubst` replaces spaces and
   shell-special chars with `_`), producing
@@ -102,29 +110,39 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
 
 ### Gotchas / non-obvious details
 
-- **`metadata.json` declares a `simp/simp_options` dependency, but the manifests
-  do not currently use a `simp_options::*` / `simplib::lookup` seam.**
-  `package_ensure` is a plain `'installed'` default, not a hiera-lookup default.
-  Don't assume a `simp_options` lookup exists to hook into — verify before
-  wiring one up. (`simplib` is only present as a spec fixture.)
-- **`tidy`/`purge` deletes unmanaged files** in the profile `*.d` and `locks`
-  directories. Anything not declared through `dconf::settings` in a managed
-  profile dir is a candidate for removal.
+- **`tidy => true`/`purge` deletes unmanaged files** in the profile `*.d` and
+  `locks` directories. Anything not declared through `dconf::settings` in a
+  managed profile dir is a candidate for removal. Default is `false` since
+  3.0.0; the `simp:defaults` profile restores `true`.
 - **Locking is opt-out, not opt-in.** In a `dconf::settings` hash a key is locked
   unless you set `lock => false`. A setting with `value` but no `lock` **will be
   locked**.
-- The default `user_profile` lives in Hiera with a **deep merge +
-  `knockout_prefix: '--'`** (`data/common.yaml`); sites extend rather than
-  replace it, and prefix an entry with `--` to knock it out.
+- `data/common.yaml` ships **no values**, only `lookup_options` giving
+  `dconf::user_profile` a **deep merge + `knockout_prefix: '--'`**; sites extend
+  or tweak the hash (including the value the `simp:defaults` profile injects)
+  rather than replace it. Don't delete the lookup_options when touching that
+  file — losing them silently switches the key to first-found lookup.
+- **The `--` knockout cannot actually remove a `user_profile` entry** (verified
+  2026-09-02 against `Puppet::Pops::MergeStrategy`): `distro: '--'` merges to
+  `distro => ''` and `--distro: {}` adds a literal `--distro` key — both are
+  then rejected by the `Dconf::DBSettings` struct type. Don't document or rely
+  on knockout for this key; the escape hatch for full replacement is a site
+  `lookup_options` override (`merge: first`).
+- The `simp:defaults` compliance data (`SIMP/compliance_profiles/`) is consumed
+  by the `compliance_engine` **gem** via a Hiera lookup_key backend — it is a
+  spec **fixture** (`.fixtures.yml`), deliberately NOT a `metadata.json`
+  dependency.
 
 ## Dependencies
 
-- `simp/simp_options` (`>= 1.6.1 < 3.0.0`) and `puppetlabs/stdlib`
-  (`>= 8.0.0 < 10.0.0`) — the declared module deps (see the note above about
-  `simp_options` not actually being referenced in the manifests).
-- Spec fixtures (`.fixtures.yml`) additionally pull `concat`, `inifile`,
-  `polkit`, and `simplib` — `concat` and `inifile` are the runtime-relevant ones
-  (`dconf::profile` uses `concat`; `dconf::settings` uses `ini_setting`).
+- `puppetlabs/concat` (`>= 6.4.0 < 10.0.0`), `puppetlabs/inifile`
+  (`>= 5.0.0 < 7.0.0`), and `puppetlabs/stdlib` (`>= 8.0.0 < 11.0.0`) — the
+  declared module deps (`dconf::profile` uses `concat`; `dconf::settings` uses
+  `ini_setting`). The former `simp/simp_options` dep was dropped in 3.0.0 (no
+  lookup ever referenced it).
+- Spec fixtures (`.fixtures.yml`) additionally pull `polkit`, `simplib`, and
+  the `compliance_engine` gem repo (for the `simp:defaults` profile specs) —
+  fixtures only, not runtime deps.
 - Runtime: **`openvox`** (`>= 8.0.0 < 9.0.0`) — `metadata.json` `requirements`
   targets openvox, not stock `puppet`.
 - Supported OS: RedHat/OracleLinux/Rocky/AlmaLinux **8/9/10** and CentOS **9/10**
@@ -137,8 +155,10 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
 - `manifests/profile.pp` — `dconf::profile` define (`/etc/dconf/profile/*` via concat).
 - `manifests/settings.pp` — `dconf::settings` define (key/value rules + locks + `dconf update`).
 - `types/dbsettings.pp`, `types/settingshash.pp` — the two data types above.
-- `data/common.yaml` + `hiera.yaml` — module data (the default `user_profile`, with deep-merge lookup options).
-- `spec/classes/init_spec.rb`, `spec/defines/{profile,settings}_spec.rb` — rspec-puppet unit tests.
+- `data/common.yaml` + `hiera.yaml` — module data (no values since 3.0.0; only the deep-merge `lookup_options` for `dconf::user_profile`).
+- `SIMP/compliance_profiles/` — the `simp:defaults` compliance profile (`profile-simp_defaults.yaml` lists the checks; `checks.yaml` defines them).
+- `spec/classes/init_spec.rb`, `spec/defines/{profile,settings}_spec.rb` — rspec-puppet unit tests (init_spec guards the "bare include only installs the package" contract).
+- `spec/classes/dconf_simp_defaults_profile_spec.rb` + `spec/fixtures/hieradata/` — end-to-end specs for the `simp:defaults` profile (enforcement, site override, deep-merge extension/knockout).
 - `spec/acceptance/suites/default/` — beaker acceptance suite; `nodesets/` holds the per-OS/docker node definitions. **Acceptance runs in CI** (`.github/workflows/pr_tests.yml`).
 - `REFERENCE.md` — generated Puppet Strings reference (do not hand-edit; regenerate).
 - `metadata.json` — module metadata, dependencies, and supported OS matrix.
@@ -177,8 +197,13 @@ bundle exec rake beaker:suites[default]
 - **Locking is opt-out.** Preserve the "locked unless `lock => false`" semantics
   in `dconf::settings`; changing it silently unlocks hardened keys.
 - Be deliberate about `tidy`/`purge` — it deletes unmanaged files in managed
-  profile directories.
-- Extend the default `user_profile` via Hiera deep-merge (`--` knockout) rather
-  than overriding the whole hash.
+  profile directories (off by default since 3.0.0).
+- **Keep the bare include inert.** `include dconf` must only install the
+  package; new behavior belongs behind `Optional[...] = undef` parameters
+  and/or the `simp:defaults` compliance profile, and init_spec.rb enforces
+  this.
+- Extend `user_profile` via Hiera deep-merge rather than overriding the whole
+  hash — and keep the `lookup_options` in `data/common.yaml` that make this
+  work (see the knockout gotcha above: `--` cannot remove entries here).
 - Keep manifest parameter `@param` docstrings current — `REFERENCE.md` is
   generated from them.

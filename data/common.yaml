@@ -8,4 +8,15 @@
 #
 #   compliance_engine::enforcement:
 #     - simp:defaults
-{}
+#
+# The lookup_options are retained so that `dconf::user_profile` values still
+# deep-merge across Hiera levels, letting sites extend rather than replace the
+# hash - including on top of the `simp:defaults` profile value. (The `--`
+# knockout prefix is kept for pre-3.0.0 fidelity but cannot actually remove an
+# entry from this hash: it only blanks the value, which the Dconf::DBSettings
+# type rejects.)
+lookup_options:
+  dconf::user_profile:
+    merge:
+      strategy: deep
+      knockout_prefix: --
