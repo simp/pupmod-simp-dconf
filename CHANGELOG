@@ -6,8 +6,10 @@
     Hiera values still merge across levels)
   - `tidy` now defaults to `false` (no purge of unmanaged files in managed
     profile directories unless explicitly enabled)
-  - Removed the `use_user_profile_defaults` and `use_user_settings_defaults`
-    parameters; behavior is driven by `user_profile`/`user_settings` being set
+  - Deprecated the `use_user_profile_defaults` and `use_user_settings_defaults`
+    parameters (setting them issues a deprecation warning); behavior is driven
+    by `user_profile`/`user_settings` being set, though an explicit `false`
+    still suppresses the corresponding resources
   - Removed the automatic `ensure => absent` cleanup of the default
     `dconf::settings` when `user_settings` was unset
 - Add a `simp:defaults` compliance_engine profile that restores the pre-3.0.0

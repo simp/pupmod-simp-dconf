@@ -73,8 +73,9 @@ The following behaviors are no longer automatic:
 * Unmanaged files in managed profile directories are no longer purged
   (`dconf::tidy` now defaults to `false`)
 * The `use_user_profile_defaults` and `use_user_settings_defaults` parameters
-  were **removed** - behavior is driven by whether `user_profile` /
-  `user_settings` are set
+  are **deprecated** and issue a warning when set - behavior is now driven by
+  whether `user_profile` / `user_settings` are set (an explicit `false` still
+  suppresses the corresponding resources for transitional compatibility)
 * The automatic cleanup resource (`dconf::settings { ...: ensure => 'absent' }`)
   that a bare include declared when `user_settings` was unset is gone; existing
   files are simply left alone

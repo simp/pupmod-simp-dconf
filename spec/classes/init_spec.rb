@@ -66,6 +66,56 @@ describe 'dconf' do
         end
       end
 
+      context 'with deprecated use_user_profile_defaults => false and user_profile set' do
+        let(:params) do
+          {
+            use_user_profile_defaults: false,
+            user_profile: { 'user' => { 'type' => 'user', 'order' => 1 } },
+            user_settings: {
+              'org/gnome/desktop/media-handling' => {
+                'automount' => { 'value' => false },
+              },
+            },
+          }
+        end
+
+        it { is_expected.to compile.with_all_deps }
+
+        it 'suppresses the profile and (via the legacy cascade) the settings' do
+          is_expected.not_to create_dconf__profile('Defaults')
+          is_expected.not_to create_dconf__settings('Defaults')
+        end
+      end
+
+      context 'with deprecated use_user_settings_defaults => false and user_settings set' do
+        let(:params) do
+          {
+            use_user_settings_defaults: false,
+            user_profile: { 'user' => { 'type' => 'user', 'order' => 1 } },
+            user_settings: {
+              'org/gnome/desktop/media-handling' => {
+                'automount' => { 'value' => false },
+              },
+            },
+          }
+        end
+
+        it { is_expected.to compile.with_all_deps }
+        it { is_expected.to create_dconf__profile('Defaults') }
+        it { is_expected.not_to create_dconf__settings('Defaults') }
+      end
+
+      context 'with deprecated use_user_profile_defaults => true (bare include otherwise)' do
+        let(:params) { { use_user_profile_defaults: true } }
+
+        it { is_expected.to compile.with_all_deps }
+
+        it 'still manages nothing without user_profile/user_settings data' do
+          is_expected.not_to create_dconf__profile('Defaults')
+          is_expected.not_to create_dconf__settings('Defaults')
+        end
+      end
+
       context 'with authselect => true' do
         let(:params) { { authselect: true } }
 

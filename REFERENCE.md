@@ -42,8 +42,10 @@ The following parameters are available in the `dconf` class:
 * [`user_profile`](#-dconf--user_profile)
 * [`user_settings`](#-dconf--user_settings)
 * [`package_ensure`](#-dconf--package_ensure)
+* [`use_user_profile_defaults`](#-dconf--use_user_profile_defaults)
 * [`user_profile_defaults_name`](#-dconf--user_profile_defaults_name)
 * [`user_profile_target`](#-dconf--user_profile_target)
+* [`use_user_settings_defaults`](#-dconf--use_user_settings_defaults)
 * [`user_settings_defaults_name`](#-dconf--user_settings_defaults_name)
 * [`tidy`](#-dconf--tidy)
 * [`authselect`](#-dconf--authselect)
@@ -82,6 +84,20 @@ The version of `dconf` to install
 
 Default value: `'installed'`
 
+##### <a name="-dconf--use_user_profile_defaults"></a>`use_user_profile_defaults`
+
+Data type: `Optional[Boolean]`
+
+**Deprecated** - will be removed in a future release
+
+* The default profile is now managed whenever `user_profile` is set
+* Setting this parameter issues a deprecation warning
+* `false` still suppresses the `dconf::profile` (and, unless overridden by
+  `use_user_settings_defaults`, the `dconf::settings`) for transitional
+  compatibility
+
+Default value: `undef`
+
 ##### <a name="-dconf--user_profile_defaults_name"></a>`user_profile_defaults_name`
 
 Data type: `String[1]`
@@ -98,6 +114,20 @@ Data type: `String[1]`
 The name of the profile that should be targeted for the defaults
 
 Default value: `'user'`
+
+##### <a name="-dconf--use_user_settings_defaults"></a>`use_user_settings_defaults`
+
+Data type: `Optional[Boolean]`
+
+**Deprecated** - will be removed in a future release
+
+* The default settings are now managed whenever `user_settings` is set
+* Setting this parameter issues a deprecation warning
+* `false` still suppresses the `dconf::settings` for transitional
+  compatibility (when unset, follows `use_user_profile_defaults` as
+  before)
+
+Default value: `undef`
 
 ##### <a name="-dconf--user_settings_defaults_name"></a>`user_settings_defaults_name`
 

@@ -24,12 +24,30 @@
 #
 #   * Accepts any valid `ensure` parameter value for the `package` resource
 #
+# @param use_user_profile_defaults
+#   **Deprecated** - will be removed in a future release
+#
+#   * The default profile is now managed whenever `user_profile` is set
+#   * Setting this parameter issues a deprecation warning
+#   * `false` still suppresses the `dconf::profile` (and, unless overridden by
+#     `use_user_settings_defaults`, the `dconf::settings`) for transitional
+#     compatibility
+#
 # @param user_profile_defaults_name
 #   The name that should be used for the custom `dconf::profile` in
 #   `user_profile`
 #
 # @param user_profile_target
 #   The name of the profile that should be targeted for the defaults
+#
+# @param use_user_settings_defaults
+#   **Deprecated** - will be removed in a future release
+#
+#   * The default settings are now managed whenever `user_settings` is set
+#   * Setting this parameter issues a deprecation warning
+#   * `false` still suppresses the `dconf::settings` for transitional
+#     compatibility (when unset, follows `use_user_profile_defaults` as
+#     before)
 #
 # @param user_settings_defaults_name
 #   The name that should be used for the custom 'dconf::settings' as well as
@@ -51,22 +69,40 @@ class dconf (
   Optional[Dconf::DBSettings]   $user_profile                = undef,
   Optional[Dconf::SettingsHash] $user_settings               = undef,
   Variant[String[1],Boolean]    $package_ensure              = 'installed',
+  Optional[Boolean]             $use_user_profile_defaults   = undef,
   String[1]                     $user_profile_defaults_name  = 'Defaults',
   String[1]                     $user_profile_target         = 'user',
+  Optional[Boolean]             $use_user_settings_defaults  = undef,
   String[1]                     $user_settings_defaults_name = $user_profile_defaults_name,
   Boolean                       $tidy                        = false,
   Boolean                       $authselect                  = false,
 ) {
   include 'dconf::install'
 
-  if $user_profile =~ NotUndef {
+  if $use_user_profile_defaults =~ NotUndef {
+    deprecation(
+      'dconf::use_user_profile_defaults',
+      "${module_name}: 'dconf::use_user_profile_defaults' is deprecated and will be removed in a future release; the default profile is managed whenever 'dconf::user_profile' is set",
+      false,
+    )
+  }
+
+  if $use_user_settings_defaults =~ NotUndef {
+    deprecation(
+      'dconf::use_user_settings_defaults',
+      "${module_name}: 'dconf::use_user_settings_defaults' is deprecated and will be removed in a future release; the default settings are managed whenever 'dconf::user_settings' is set",
+      false,
+    )
+  }
+
+  if $user_profile =~ NotUndef and $use_user_profile_defaults != false {
     dconf::profile { $user_profile_defaults_name:
       target  => $user_profile_target,
       entries => $user_profile,
     }
   }
 
-  if $user_settings =~ NotUndef {
+  if $user_settings =~ NotUndef and pick($use_user_settings_defaults, $use_user_profile_defaults, true) {
     dconf::settings { $user_settings_defaults_name:
       settings_hash => $user_settings,
       profile       => $user_settings_defaults_name,

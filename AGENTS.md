@@ -57,6 +57,13 @@ of shared state (`dconf::install`, `dconf::profile`, and `dconf::settings` all
   stops the conflict.
 - **`package_ensure`** (default `'installed'`) — passed straight to
   `dconf::install`.
+- **`use_user_profile_defaults` / `use_user_settings_defaults`**
+  (`Optional[Boolean]`, default `undef`) — **deprecated** (setting either
+  issues a `deprecation()` warning, key `dconf::use_user_*_defaults`). Kept
+  for transitional compatibility: an explicit `false` still suppresses the
+  corresponding `dconf::profile`/`dconf::settings` (settings follow the
+  profile param when unset, as pre-3.0.0); `true` adds nothing — data
+  presence is the real gate.
 
 **`dconf::install` (`manifests/install.pp`, private — `assert_private()`)** —
 `stdlib::ensure_packages('dconf', { ensure => $dconf::package_ensure })`. Nothing
