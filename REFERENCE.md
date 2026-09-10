@@ -149,6 +149,9 @@ If set to true, any files in the profile directories managed by
   OS, other modules, or administrators. It is disabled by default and
   should only be enabled deliberately (the `simp:defaults` profile
   restores the pre-3.0.0 value of `true`)
+* Only takes effect on directories that `dconf::settings` resources
+  manage - with no `dconf::settings` (or `user_settings`) in the
+  catalog, nothing is purged
 
 Default value: `false`
 
@@ -266,6 +269,9 @@ Data type: `Optional[String[1]]`
 
 The dconf profile where you want to place the key/value.
 
+* When not set, falls back to `dconf::user_profile_defaults_name`
+  (default `Defaults`)
+
 Default value: `undef`
 
 ##### <a name="-dconf--settings--ensure"></a>`ensure`
@@ -290,7 +296,8 @@ Default value: `'/etc/dconf/db'`
 
 ### <a name="Dconf--DBSettings"></a>`Dconf::DBSettings`
 
-Valid dconf database settings
+At least one database entry is required: an empty hash would render an
+empty profile file over the vendor-shipped one.
 
 Alias of
 
@@ -298,7 +305,7 @@ Alias of
 Hash[String[1], Struct[{
     'type'  => Enum['user', 'system', 'service', 'file'], # The type of database
     'order' => Optional[Integer[1]]                       # The order of the entry in the list
-  }]]
+  }], 1]
 ```
 
 ### <a name="Dconf--SettingsHash"></a>`Dconf::SettingsHash`

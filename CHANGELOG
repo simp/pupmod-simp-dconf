@@ -12,12 +12,30 @@
     still suppresses the corresponding resources
   - Removed the automatic `ensure => absent` cleanup of the default
     `dconf::settings` when `user_settings` was unset
+- COORDINATION: simp/gnome, simp/mate, and simp/gdm relied on the removed
+  default hierarchy contributing `user-db:user` to /etc/dconf/profile/user;
+  they pin simp/dconf < 3.0.0 and must declare their own `user` database
+  entry (or enforce simp:defaults) before widening their dependency range
 - Add a `simp:defaults` compliance_engine profile that restores the pre-3.0.0
-  behavior (activate with `compliance_engine::enforcement: [simp:defaults]`)
+  defaults (activate with `compliance_engine::enforcement: [simp:defaults]`).
+  Note the restored `dconf::tidy: true` only takes effect on directories
+  managed by `dconf::settings` resources; the pre-3.0.0 cleanup resource that
+  purged /etc/dconf/db/Defaults.d on a bare include is not restored
+- `dconf::settings` now always falls back to
+  `dconf::user_profile_defaults_name` when `profile` is not given (pre-3.0.0
+  manifests that omitted `profile` keep compiling after the upgrade)
+- `Dconf::DBSettings` now requires at least one database entry: an empty
+  hash is a compile error instead of silently writing an empty profile file
+  over the vendor-shipped one
 - `dconf::settings` with `ensure => absent` now removes the settings file
   (previously it left an empty file behind)
 - Drop the unused `simp/simp_options` dependency; declare the previously
-  missing `puppetlabs/concat` and `puppetlabs/inifile` runtime dependencies
+  missing `puppetlabs/concat` and `puppetlabs/inifile` runtime dependencies;
+  raise the `puppetlabs/stdlib` floor to 9.2.0 (3-argument `deprecation()`
+  and `stdlib::ensure_packages`)
+- Drop the never-functional `--` knockout_prefix from the
+  `dconf::user_profile` lookup_options (knockout blanks a value, which
+  `Dconf::DBSettings` rejects; the deep merge itself is unchanged)
 - Document the on-disk layout the examples produce (fixes #67)
 
 * Mon Aug 24 2026 Steven Pritchard <steve@sicura.us> - 2.0.1

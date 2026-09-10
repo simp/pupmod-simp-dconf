@@ -40,8 +40,8 @@ of shared state (`dconf::install`, `dconf::profile`, and `dconf::settings` all
   ships **no default value**; the pre-3.0.0 user (1) / local (system, 20) /
   site (system, 30) / distro (system, 40) hierarchy is restored by the
   `simp:defaults` compliance profile. `data/common.yaml` retains deep-merge
-  `lookup_options` (`knockout_prefix: '--'`) for this key, so Hiera values
-  merge across levels rather than replace.
+  `lookup_options` for this key, so Hiera values merge across levels rather
+  than replace.
 - **`user_settings`** (`Optional[Dconf::SettingsHash]`, default `undef`) —
   global settings to push via Hiera. When set, a `dconf::settings` resource
   named `user_settings_defaults_name` is created. When unset, nothing is
@@ -84,9 +84,9 @@ order is `1`.
 **`dconf::settings` (`manifests/settings.pp`, define)** — the workhorse. For a
 given profile it:
 
-- Resolves the target profile: explicit `$profile` → else
-  `$dconf::user_profile_defaults_name` when `dconf::user_profile` is set → else
-  `fail()`.
+- Resolves the target profile: explicit `$profile`, else it falls back to
+  `$dconf::user_profile_defaults_name` (default `Defaults`) unconditionally —
+  same fallback the pre-3.0.0 default configuration provided.
 - Sanitizes the resource title into a filename (`regsubst` replaces spaces and
   shell-special chars with `_`), producing
   `/etc/dconf/db/<profile>.d/<name>`.
@@ -108,9 +108,11 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
 
 ### Types (`types/`)
 
-- **`Dconf::DBSettings`** — `Hash[String, Struct[{ type => Enum[user, system,
-  service, file], order => Optional[Integer[1]] }]]`. Used for `user_profile` /
-  `dconf::profile` entries.
+- **`Dconf::DBSettings`** — `Hash[String[1], Struct[{ type => Enum[user, system,
+  service, file], order => Optional[Integer[1]] }], 1]`. Used for `user_profile` /
+  `dconf::profile` entries. **Minimum size 1**: an empty hash is rejected at
+  compile time, because it would render an empty profile file over the
+  vendor-shipped one.
 - **`Dconf::SettingsHash`** — `Hash[String, Hash[String, Struct[{ value =>
   NotUndef, lock => Optional[Boolean] }]]]` — i.e. `schema => { key => { value,
   lock? } }`. Used for `user_settings` / `dconf::settings`.
@@ -125,16 +127,14 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
   unless you set `lock => false`. A setting with `value` but no `lock` **will be
   locked**.
 - `data/common.yaml` ships **no values**, only `lookup_options` giving
-  `dconf::user_profile` a **deep merge + `knockout_prefix: '--'`**; sites extend
-  or tweak the hash (including the value the `simp:defaults` profile injects)
-  rather than replace it. Don't delete the lookup_options when touching that
-  file — losing them silently switches the key to first-found lookup.
-- **The `--` knockout cannot actually remove a `user_profile` entry** (verified
-  2026-09-02 against `Puppet::Pops::MergeStrategy`): `distro: '--'` merges to
-  `distro => ''` and `--distro: {}` adds a literal `--distro` key — both are
-  then rejected by the `Dconf::DBSettings` struct type. Don't document or rely
-  on knockout for this key; the escape hatch for full replacement is a site
-  `lookup_options` override (`merge: first`).
+  `dconf::user_profile` a **deep merge**; sites extend or tweak the hash
+  (including the value the `simp:defaults` profile injects) rather than
+  replace it. Don't delete the lookup_options when touching that file —
+  losing them silently switches the key to first-found lookup. A deep merge
+  cannot *remove* an entry; the escape hatch for full replacement is a site
+  `lookup_options` override (`merge: first`). (A `knockout_prefix: '--'` was
+  configured pre-3.0.0 but never worked for this key — knockout blanks the
+  value, which the `Dconf::DBSettings` struct rejects — so it was dropped.)
 - The `simp:defaults` compliance data (`SIMP/compliance_profiles/`) is consumed
   by the `compliance_engine` **gem** via a Hiera lookup_key backend — it is a
   spec **fixture** (`.fixtures.yml`), deliberately NOT a `metadata.json`
@@ -142,11 +142,14 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
 
 ## Dependencies
 
-- `puppetlabs/concat` (`>= 6.4.0 < 10.0.0`), `puppetlabs/inifile`
-  (`>= 5.0.0 < 7.0.0`), and `puppetlabs/stdlib` (`>= 8.0.0 < 11.0.0`) — the
+- `puppetlabs/concat` (`>= 6.4.0 < 11.0.0`), `puppetlabs/inifile`
+  (`>= 5.0.0 < 7.0.0`), and `puppetlabs/stdlib` (`>= 9.2.0 < 11.0.0`) — the
   declared module deps (`dconf::profile` uses `concat`; `dconf::settings` uses
-  `ini_setting`). The former `simp/simp_options` dep was dropped in 3.0.0 (no
-  lookup ever referenced it).
+  `ini_setting`). The stdlib floor is 9.2.0 because `init.pp` uses the
+  **3-argument `deprecation()`** (`use_strict_setting`, stdlib 9.2.0+) and
+  `install.pp` uses `stdlib::ensure_packages` (9.0.0+); don't lower it. The
+  former `simp/simp_options` dep was dropped in 3.0.0 (no lookup ever
+  referenced it).
 - Spec fixtures (`.fixtures.yml`) additionally pull `polkit`, `simplib`, and
   the `compliance_engine` gem repo (for the `simp:defaults` profile specs) —
   fixtures only, not runtime deps.
@@ -165,7 +168,7 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
 - `data/common.yaml` + `hiera.yaml` — module data (no values since 3.0.0; only the deep-merge `lookup_options` for `dconf::user_profile`).
 - `SIMP/compliance_profiles/` — the `simp:defaults` compliance profile (`profile-simp_defaults.yaml` lists the checks; `checks.yaml` defines them).
 - `spec/classes/init_spec.rb`, `spec/defines/{profile,settings}_spec.rb` — rspec-puppet unit tests (init_spec guards the "bare include only installs the package" contract).
-- `spec/classes/dconf_simp_defaults_profile_spec.rb` + `spec/fixtures/hieradata/` — end-to-end specs for the `simp:defaults` profile (enforcement, site override, deep-merge extension/knockout).
+- `spec/classes/dconf_simp_defaults_profile_spec.rb` + `spec/fixtures/hieradata/` — end-to-end specs for the `simp:defaults` profile (enforcement, site override, deep-merge extension).
 - `spec/acceptance/suites/default/` — beaker acceptance suite; `nodesets/` holds the per-OS/docker node definitions. **Acceptance runs in CI** (`.github/workflows/pr_tests.yml`).
 - `REFERENCE.md` — generated Puppet Strings reference (do not hand-edit; regenerate).
 - `metadata.json` — module metadata, dependencies, and supported OS matrix.
@@ -211,6 +214,7 @@ bundle exec rake beaker:suites[default]
   this.
 - Extend `user_profile` via Hiera deep-merge rather than overriding the whole
   hash — and keep the `lookup_options` in `data/common.yaml` that make this
-  work (see the knockout gotcha above: `--` cannot remove entries here).
+  work (a deep merge cannot remove entries; full replacement needs a site
+  `lookup_options` `merge: first` override).
 - Keep manifest parameter `@param` docstrings current — `REFERENCE.md` is
   generated from them.

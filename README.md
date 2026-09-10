@@ -79,9 +79,20 @@ The following behaviors are no longer automatic:
 * The automatic cleanup resource (`dconf::settings { ...: ensure => 'absent' }`)
   that a bare include declared when `user_settings` was unset is gone; existing
   files are simply left alone
-* The unused `simp/simp_options` metadata dependency was dropped, and the
+* The unused `simp/simp_options` metadata dependency was dropped, the
   runtime `puppetlabs/concat` + `puppetlabs/inifile` dependencies are now
-  declared
+  declared, and the `puppetlabs/stdlib` floor was raised to `9.2.0`
+  (required for the 3-argument `deprecation()` and `stdlib::ensure_packages`)
+* `Dconf::DBSettings` now requires at least one database entry: an empty
+  `dconf::user_profile`/`dconf::profile` entries hash is a compile error
+  instead of silently writing an empty profile file over the vendor one
+
+**Coordination with downstream modules**: `simp/gnome`, `simp/mate`, and
+`simp/gdm` relied on the removed default hierarchy contributing
+`user-db:user` to `/etc/dconf/profile/user`. They currently pin
+`simp/dconf < 3.0.0`; before those pins are widened, each needs to declare
+its own `user` database entry (or enforce `simp:defaults`), otherwise
+per-user gsettings writes fail read-only on affected systems.
 
 There are two recovery paths:
 
@@ -126,9 +137,8 @@ dconf::settings { 'automount_lockdowns':
 }
 ```
 
-The `profile` parameter is required unless `dconf::user_profile` is set (in
-which case it falls back to `dconf::user_profile_defaults_name`, default
-`Defaults`).
+The `profile` parameter is optional: when omitted, it falls back to
+`dconf::user_profile_defaults_name` (default `Defaults`), as before 3.0.0.
 
 #### Using `hiera`
 
@@ -250,10 +260,9 @@ dconf::user_profile:
     order: 35     # tweaks just this field of the lower level's 'site' entry
 ```
 
-Note that a database **cannot be removed** through the merge: the configured
-`--` knockout prefix only blanks an entry's value, which the
-`Dconf::DBSettings` type then rejects. To fully replace the hash instead of
-merging, override the lookup behavior in your own Hiera:
+Note that a database **cannot be removed** through the merge - a deep merge
+only adds or overrides keys. To fully replace the hash instead of merging,
+override the lookup behavior in your own Hiera:
 
 ```yaml
 ---
@@ -279,11 +288,17 @@ This restores:
 * `dconf::user_profile`: the old user (1) / local (20) / site (30) /
   distro (40) hierarchy, written to `/etc/dconf/profile/user`
 * `dconf::tidy: true` - **including the destructive purge** of unmanaged
-  files in managed profile directories
+  files in the directories that `dconf::settings` resources manage. Note that
+  `tidy` only takes effect where a `dconf::settings` (or
+  `dconf::user_settings`) is declared: the restored profile alone manages no
+  settings directories, so enforcing this profile on an otherwise bare
+  include purges nothing. (Pre-3.0.0, a bare include also declared a cleanup
+  `dconf::settings` that made `/etc/dconf/db/Defaults.d` a purged directory;
+  that resource is gone in 3.0.0 and this profile does not bring it back.)
 
-The profile is a faithful restoration of the *old* behavior, destructive bits
-included. If you want "old behavior but safer", enable the profile and
-override the specific toggles in your own Hiera, which outranks the profile:
+The profile restores the old *defaults*, destructive bits included. If you
+want "old behavior but safer", enable the profile and override the specific
+toggles in your own Hiera, which outranks the profile:
 
 ```yaml
 ---

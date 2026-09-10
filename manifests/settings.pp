@@ -22,6 +22,9 @@
 # @param profile
 #   The dconf profile where you want to place the key/value.
 #
+#   * When not set, falls back to `dconf::user_profile_defaults_name`
+#     (default `Defaults`)
+#
 # @param ensure
 #   Ensure the entire settings Hash is present or absent
 #
@@ -39,15 +42,7 @@ define dconf::settings (
 ) {
   include 'dconf'
 
-  if $profile {
-    $_profile = $profile
-  }
-  elsif $dconf::user_profile =~ NotUndef {
-    $_profile = $dconf::user_profile_defaults_name
-  }
-  else {
-    fail("dconf::settings[${title}]: you must specify 'profile' when 'dconf::user_profile' is not set")
-  }
+  $_profile = pick($profile, $dconf::user_profile_defaults_name)
 
   $_name = regsubst($name.downcase, '( |/|!|@|#|\$|%|\^|&|\*|[|])', '_', 'G')
 

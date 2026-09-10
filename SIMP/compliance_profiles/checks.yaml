@@ -9,10 +9,17 @@
 # `confine:` splits are needed - the pre-3.0.0 defaults were identical on
 # every supported OS (data/common.yaml only).
 #
-# Note: `simp:defaults.dconf.tidy` deliberately restores the *destructive*
-# pre-3.0.0 purge of unmanaged files in managed profile directories. Sites
-# that want the profile without the purge should override `dconf::tidy:
-# false` in their own Hiera, which outranks this profile.
+# Note: `simp:defaults.dconf.tidy` restores the pre-3.0.0 value of `true`,
+# but `tidy` only takes effect on the `*.d`/`locks` directories that
+# `dconf::settings` resources manage. A catalog with only the restored
+# profile manages no settings directories, so nothing is purged until a
+# `dconf::settings` (or `dconf::user_settings`) is declared. (Pre-3.0.0, a
+# bare include also declared an `ensure => absent` cleanup `dconf::settings`
+# that made /etc/dconf/db/Defaults.d a purged directory; that resource is
+# gone in 3.0.0 and this profile does not bring it back.) Sites that declare
+# settings but want the profile without the destructive purge should
+# override `dconf::tidy: false` in their own Hiera, which outranks this
+# profile.
 ---
 version: 2.0.0
 checks:

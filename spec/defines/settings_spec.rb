@@ -35,6 +35,31 @@ describe 'dconf::settings', type: :define do
         end
       end
 
+      context 'without profile (falls back to dconf::user_profile_defaults_name)' do
+        let(:title) { 'Enable lock delay' }
+        let(:params) do
+          {
+            ensure: 'present',
+            settings_hash: { 'org/gnome/desktop/screensaver' => { 'lock-delay' => { 'value' => true } } },
+          }
+        end
+
+        it { is_expected.to compile.with_all_deps }
+        it { is_expected.to create_file('/etc/dconf/db/Defaults.d/enable_lock_delay') }
+        it do
+          is_expected.to create_file('/etc/dconf/db/Defaults.d/locks/enable_lock_delay')
+            .with_content('/org/gnome/desktop/screensaver/lock-delay')
+        end
+
+        context 'with a custom dconf::user_profile_defaults_name' do
+          let(:pre_condition) { "class { 'dconf': user_profile_defaults_name => 'Site' }" }
+
+          it { is_expected.to compile.with_all_deps }
+          it { is_expected.to create_file('/etc/dconf/db/Site.d/enable_lock_delay') }
+          it { is_expected.not_to create_file('/etc/dconf/db/Defaults.d/enable_lock_delay') }
+        end
+      end
+
       context 'a setting with many items' do
         let(:title) { 'Set wallpaper' }
         let(:params) do

@@ -86,6 +86,8 @@ describe 'dconf' do
           end
         end
 
+        # `tidy` only takes effect on directories managed by dconf::settings
+        # resources, so the restored purge is only observable once one exists.
         context 'with a dconf::settings resource declared' do
           let(:pre_condition) { TEST_SETTINGS }
 
@@ -132,9 +134,8 @@ describe 'dconf' do
   # --------------------------------------------------------------------------
   # Enforced + partial site user_profile: the deep-merge lookup_options in
   # data/common.yaml must merge the site's partial hash with the profile's
-  # restored hierarchy instead of replacing it. (The configured `--` knockout
-  # prefix cannot REMOVE an entry from this hash: it only blanks the value,
-  # which Dconf::DBSettings rejects - so removal is deliberately not tested.)
+  # restored hierarchy instead of replacing it. (A deep merge cannot REMOVE
+  # an entry; full replacement requires a site lookup_options override.)
   # --------------------------------------------------------------------------
   context 'when enforcing simp:defaults with a partial site user_profile' do
     let(:hiera_config) do

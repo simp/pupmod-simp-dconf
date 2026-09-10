@@ -61,6 +61,9 @@
 #     OS, other modules, or administrators. It is disabled by default and
 #     should only be enabled deliberately (the `simp:defaults` profile
 #     restores the pre-3.0.0 value of `true`)
+#   * Only takes effect on directories that `dconf::settings` resources
+#     manage - with no `dconf::settings` (or `user_settings`) in the
+#     catalog, nothing is purged
 #
 # @param authselect
 #   Flip this parameter to true if you are using authselect and receiving
