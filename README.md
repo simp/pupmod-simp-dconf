@@ -88,11 +88,17 @@ The following behaviors are no longer automatic:
   instead of silently writing an empty profile file over the vendor one
 
 **Coordination with downstream modules**: `simp/gnome`, `simp/mate`, and
-`simp/gdm` relied on the removed default hierarchy contributing
-`user-db:user` to `/etc/dconf/profile/user`. They currently pin
-`simp/dconf < 3.0.0`; before those pins are widened, each needs to declare
-its own `user` database entry (or enforce `simp:defaults`), otherwise
-per-user gsettings writes fail read-only on affected systems.
+`simp/gdm` all pin `simp/dconf < 3.0.0`, but only `simp/gnome` is actually
+broken by the removed default hierarchy: its `dconf::profile { 'GNOME':
+target => 'user', ... }` overwrites `/etc/dconf/profile/user` with a single
+`system-db` line and no `user-db`, so it must declare its own `user`
+database entry (or enforce `simp:defaults`) before widening its pin,
+otherwise per-user gsettings writes fail read-only. `simp/gdm` writes its
+own `/etc/dconf/profile/gdm` (which already carries `user-db:user`) and
+`simp/mate` targets a separate `/etc/dconf/profile/mate_user`, leaving
+`/etc/dconf/profile/user` to the vendor RPM (which ships the same
+user/local/site/distro hierarchy the old default produced) — those two only
+need their pins widened.
 
 There are two recovery paths:
 

@@ -12,10 +12,12 @@
     still suppresses the corresponding resources
   - Removed the automatic `ensure => absent` cleanup of the default
     `dconf::settings` when `user_settings` was unset
-- COORDINATION: simp/gnome, simp/mate, and simp/gdm relied on the removed
-  default hierarchy contributing `user-db:user` to /etc/dconf/profile/user;
-  they pin simp/dconf < 3.0.0 and must declare their own `user` database
-  entry (or enforce simp:defaults) before widening their dependency range
+- COORDINATION: simp/gnome, simp/mate, and simp/gdm pin simp/dconf < 3.0.0.
+  Only simp/gnome is broken by the removed default hierarchy (its 'user'
+  profile overwrites /etc/dconf/profile/user without a user-db entry) and
+  must declare its own `user` database entry (or enforce simp:defaults)
+  before widening its pin; simp/gdm and simp/mate manage separate profile
+  files and only need their pins widened
 - Add a `simp:defaults` compliance_engine profile that restores the pre-3.0.0
   defaults (activate with `compliance_engine::enforcement: [simp:defaults]`).
   Note the restored `dconf::tidy: true` only takes effect on directories

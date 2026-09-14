@@ -150,9 +150,9 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
   `install.pp` uses `stdlib::ensure_packages` (9.0.0+); don't lower it. The
   former `simp/simp_options` dep was dropped in 3.0.0 (no lookup ever
   referenced it).
-- Spec fixtures (`.fixtures.yml`) additionally pull `polkit`, `simplib`, and
-  the `compliance_engine` gem repo (for the `simp:defaults` profile specs) —
-  fixtures only, not runtime deps.
+- Spec fixtures (`.fixtures.yml`) additionally pull the `compliance_engine`
+  gem repo (for the `simp:defaults` profile specs) — a fixture only, not a
+  runtime dep.
 - Runtime: **`openvox`** (`>= 8.0.0 < 9.0.0`) — `metadata.json` `requirements`
   targets openvox, not stock `puppet`.
 - Supported OS: RedHat/OracleLinux/Rocky/AlmaLinux **8/9/10** and CentOS **9/10**
