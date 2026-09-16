@@ -67,38 +67,22 @@ As of 3.0.0, a bare `include dconf` **only installs the `dconf` package**.
 The following behaviors are no longer automatic:
 
 * No default user profile is written to `/etc/dconf/profile/user`
-  (`dconf::user_profile` now defaults to `undef`; the old
-  user/local/site/distro hierarchy was removed from the module's Hiera data)
+  (`dconf::user_profile` now defaults to `undef`)
 * No `/etc/dconf/db/<profile>.d/` directories or settings files are created
 * Unmanaged files in managed profile directories are no longer purged
   (`dconf::tidy` now defaults to `false`)
 * The `use_user_profile_defaults` and `use_user_settings_defaults` parameters
   are **deprecated** and issue a warning when set - behavior is now driven by
   whether `user_profile` / `user_settings` are set (an explicit `false` still
-  suppresses the corresponding resources for transitional compatibility)
+  suppresses the corresponding resources)
 * The automatic cleanup resource (`dconf::settings { ...: ensure => 'absent' }`)
   that a bare include declared when `user_settings` was unset is gone; existing
-  files are simply left alone
+  files are left alone
 * The unused `simp/simp_options` metadata dependency was dropped, the
   runtime `puppetlabs/concat` + `puppetlabs/inifile` dependencies are now
   declared, and the `puppetlabs/stdlib` floor was raised to `9.2.0`
-  (required for the 3-argument `deprecation()` and `stdlib::ensure_packages`)
 * `Dconf::DBSettings` now requires at least one database entry: an empty
-  `dconf::user_profile`/`dconf::profile` entries hash is a compile error
-  instead of silently writing an empty profile file over the vendor one
-
-**Coordination with downstream modules**: `simp/gnome`, `simp/mate`, and
-`simp/gdm` all pin `simp/dconf < 3.0.0`, but only `simp/gnome` is actually
-broken by the removed default hierarchy: its `dconf::profile { 'GNOME':
-target => 'user', ... }` overwrites `/etc/dconf/profile/user` with a single
-`system-db` line and no `user-db`, so it must declare its own `user`
-database entry (or enforce `simp:defaults`) before widening its pin,
-otherwise per-user gsettings writes fail read-only. `simp/gdm` writes its
-own `/etc/dconf/profile/gdm` (which already carries `user-db:user`) and
-`simp/mate` targets a separate `/etc/dconf/profile/mate_user`, leaving
-`/etc/dconf/profile/user` to the vendor RPM (which ships the same
-user/local/site/distro hierarchy the old default produced) — those two only
-need their pins widened.
+  `dconf::user_profile`/`dconf::profile` entries hash is now a compile error
 
 There are two recovery paths:
 
@@ -294,17 +278,12 @@ This restores:
 * `dconf::user_profile`: the old user (1) / local (20) / site (30) /
   distro (40) hierarchy, written to `/etc/dconf/profile/user`
 * `dconf::tidy: true` - **including the destructive purge** of unmanaged
-  files in the directories that `dconf::settings` resources manage. Note that
-  `tidy` only takes effect where a `dconf::settings` (or
-  `dconf::user_settings`) is declared: the restored profile alone manages no
-  settings directories, so enforcing this profile on an otherwise bare
-  include purges nothing. (Pre-3.0.0, a bare include also declared a cleanup
-  `dconf::settings` that made `/etc/dconf/db/Defaults.d` a purged directory;
-  that resource is gone in 3.0.0 and this profile does not bring it back.)
+  files in the directories that `dconf::settings` resources manage. `tidy`
+  only takes effect where a `dconf::settings` (or `dconf::user_settings`) is
+  declared.
 
-The profile restores the old *defaults*, destructive bits included. If you
-want "old behavior but safer", enable the profile and override the specific
-toggles in your own Hiera, which outranks the profile:
+To override an individual toggle, set it in your own Hiera, which outranks
+the profile:
 
 ```yaml
 ---
@@ -314,10 +293,9 @@ dconf::tidy: false
 ```
 
 Because `dconf::user_profile` deep-merges (see
-[Configuring custom profiles](#globally-with-hiera)), the same applies to the
-restored database hierarchy: a partial `dconf::user_profile` hash in your own
-Hiera extends or tweaks the profile's user/local/site/distro value rather than
-replacing it.
+[Configuring custom profiles](#globally-with-hiera)), a partial
+`dconf::user_profile` hash in your own Hiera extends or tweaks the profile's
+hierarchy rather than replacing it.
 
 ## Reference
 

@@ -1,43 +1,21 @@
 * Wed Sep 02 2026 Hazel Caballero <hazel@sicura.us> - 3.0.0
 - Reduce blast radius: a bare `include dconf` now only installs the package
-  - `user_profile` is now `Optional` and defaults to `undef`; the default
-    user/local/site/distro profile hierarchy was removed from data/common.yaml
-    (the deep-merge lookup_options for `user_profile` are retained, so site
-    Hiera values still merge across levels)
-  - `tidy` now defaults to `false` (no purge of unmanaged files in managed
-    profile directories unless explicitly enabled)
-  - Deprecated the `use_user_profile_defaults` and `use_user_settings_defaults`
-    parameters (setting them issues a deprecation warning); behavior is driven
-    by `user_profile`/`user_settings` being set, though an explicit `false`
-    still suppresses the corresponding resources
+  - `user_profile` is now `Optional` and defaults to `undef`
+  - `tidy` now defaults to `false`
+  - Deprecated `use_user_profile_defaults` and `use_user_settings_defaults`;
+    setting either issues a deprecation warning
   - Removed the automatic `ensure => absent` cleanup of the default
     `dconf::settings` when `user_settings` was unset
-- COORDINATION: simp/gnome, simp/mate, and simp/gdm pin simp/dconf < 3.0.0.
-  Only simp/gnome is broken by the removed default hierarchy (its 'user'
-  profile overwrites /etc/dconf/profile/user without a user-db entry) and
-  must declare its own `user` database entry (or enforce simp:defaults)
-  before widening its pin; simp/gdm and simp/mate manage separate profile
-  files and only need their pins widened
 - Add a `simp:defaults` compliance_engine profile that restores the pre-3.0.0
-  defaults (activate with `compliance_engine::enforcement: [simp:defaults]`).
-  Note the restored `dconf::tidy: true` only takes effect on directories
-  managed by `dconf::settings` resources; the pre-3.0.0 cleanup resource that
-  purged /etc/dconf/db/Defaults.d on a bare include is not restored
-- `dconf::settings` now always falls back to
-  `dconf::user_profile_defaults_name` when `profile` is not given (pre-3.0.0
-  manifests that omitted `profile` keep compiling after the upgrade)
-- `Dconf::DBSettings` now requires at least one database entry: an empty
-  hash is a compile error instead of silently writing an empty profile file
-  over the vendor-shipped one
+  defaults (activate with `compliance_engine::enforcement: [simp:defaults]`)
+- `dconf::settings` now falls back to `dconf::user_profile_defaults_name` when
+  `profile` is not given
+- `Dconf::DBSettings` now requires at least one database entry
 - `dconf::settings` with `ensure => absent` now removes the settings file
-  (previously it left an empty file behind)
-- Drop the unused `simp/simp_options` dependency; declare the previously
-  missing `puppetlabs/concat` and `puppetlabs/inifile` runtime dependencies;
-  raise the `puppetlabs/stdlib` floor to 9.2.0 (3-argument `deprecation()`
-  and `stdlib::ensure_packages`)
-- Drop the never-functional `--` knockout_prefix from the
-  `dconf::user_profile` lookup_options (knockout blanks a value, which
-  `Dconf::DBSettings` rejects; the deep merge itself is unchanged)
+- Drop the unused `simp/simp_options` dependency, declare the missing
+  `puppetlabs/concat` and `puppetlabs/inifile` runtime dependencies, and raise
+  the `puppetlabs/stdlib` floor to 9.2.0
+- Drop the `--` knockout_prefix from the `dconf::user_profile` lookup_options
 - Document the on-disk layout the examples produce (fixes #67)
 
 * Mon Aug 24 2026 Steven Pritchard <steve@sicura.us> - 2.0.1
