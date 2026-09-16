@@ -1,0 +1,7 @@
+---
+compliance_engine::enforcement:
+  - simp:defaults
+# Explicit site override of the destructive purge toggle. It sits at a higher
+# Hiera priority than the compliance engine level, so it must win over the
+# profile's `dconf::tidy: true`.
+dconf::tidy: false

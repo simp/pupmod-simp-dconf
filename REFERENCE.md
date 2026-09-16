@@ -8,7 +8,7 @@
 
 #### Public Classes
 
-* [`dconf`](#dconf): Manage 'dconf' and associated entries
+* [`dconf`](#dconf): Manage 'dconf' and associated entries  A bare `include dconf` only installs the `dconf` package. All other behavior is opt-in: set `user_prof
 
 #### Private Classes
 
@@ -30,6 +30,11 @@
 
 Manage 'dconf' and associated entries
 
+A bare `include dconf` only installs the `dconf` package. All other
+behavior is opt-in: set `user_profile` and/or `user_settings` directly, or
+enforce the shipped `simp:defaults` compliance profile to restore the
+pre-3.0.0 defaults.
+
 #### Parameters
 
 The following parameters are available in the `dconf` class:
@@ -47,19 +52,25 @@ The following parameters are available in the `dconf` class:
 
 ##### <a name="-dconf--user_profile"></a>`user_profile`
 
-Data type: `Dconf::DBSettings`
+Data type: `Optional[Dconf::DBSettings]`
 
 The contents of the default user profile that will be added
 
-@see data/common.yaml
+* When set, a `dconf::profile` named `$user_profile_defaults_name` is
+  created targeting `$user_profile_target`
+* When `undef` (the default), no profile entries are managed
 
-Default value: `{ 'user' => { 'type' => 'user', 'order' => 1 }, 'local' => { 'type' => 'system', 'order' => 20 }, 'site' => { 'type' => 'system', 'order' => 30 }, 'distro' => { 'type' => 'system', 'order' => 40 } }`
+Default value: `undef`
 
 ##### <a name="-dconf--user_settings"></a>`user_settings`
 
 Data type: `Optional[Dconf::SettingsHash]`
 
 Custom user settings that can be provided via Hiera globally
+
+* When set, a `dconf::settings` named `$user_settings_defaults_name` is
+  created
+* When `undef` (the default), no settings are managed
 
 Default value: `undef`
 
@@ -75,11 +86,17 @@ Default value: `'installed'`
 
 ##### <a name="-dconf--use_user_profile_defaults"></a>`use_user_profile_defaults`
 
-Data type: `Boolean`
+Data type: `Optional[Boolean]`
 
-Add the default `user_profile` settings to the system
+**Deprecated** - will be removed in a future release
 
-Default value: `true`
+* The default profile is now managed whenever `user_profile` is set
+* Setting this parameter issues a deprecation warning
+* `false` still suppresses the `dconf::profile` (and, unless overridden by
+  `use_user_settings_defaults`, the `dconf::settings`) for transitional
+  compatibility
+
+Default value: `undef`
 
 ##### <a name="-dconf--user_profile_defaults_name"></a>`user_profile_defaults_name`
 
@@ -100,11 +117,17 @@ Default value: `'user'`
 
 ##### <a name="-dconf--use_user_settings_defaults"></a>`use_user_settings_defaults`
 
-Data type: `Boolean`
+Data type: `Optional[Boolean]`
 
-Enable creation of custom `dconf::settings` based on the `user_settings` Hash
+**Deprecated** - will be removed in a future release
 
-Default value: `$use_user_profile_defaults`
+* The default settings are now managed whenever `user_settings` is set
+* Setting this parameter issues a deprecation warning
+* `false` still suppresses the `dconf::settings` for transitional
+  compatibility (when unset, follows `use_user_profile_defaults` as
+  before)
+
+Default value: `undef`
 
 ##### <a name="-dconf--user_settings_defaults_name"></a>`user_settings_defaults_name`
 
@@ -119,17 +142,25 @@ Default value: `$user_profile_defaults_name`
 
 Data type: `Boolean`
 
-If set to true, any files in the profile directory that aren't managed by puppet
-will be purged
+If set to true, any files in the profile directories managed by
+`dconf::settings` that aren't managed by puppet will be purged
 
-Default value: `true`
+* WARNING: This is destructive - it removes drop-in files placed by the
+  OS, other modules, or administrators. It is disabled by default and
+  should only be enabled deliberately (the `simp:defaults` profile
+  restores the pre-3.0.0 value of `true`)
+* Only takes effect on directories that `dconf::settings` resources
+  manage - with no `dconf::settings` (or `user_settings`) in the
+  catalog, nothing is purged
+
+Default value: `false`
 
 ##### <a name="-dconf--authselect"></a>`authselect`
 
 Data type: `Boolean`
 
-Flip this parameter to true if you are using authselect and receiving resource
-conflicts
+Flip this parameter to true if you are using authselect and receiving
+resource conflicts
 
 Default value: `false`
 
@@ -238,6 +269,9 @@ Data type: `Optional[String[1]]`
 
 The dconf profile where you want to place the key/value.
 
+* When not set, falls back to `dconf::user_profile_defaults_name`
+  (default `Defaults`)
+
 Default value: `undef`
 
 ##### <a name="-dconf--settings--ensure"></a>`ensure`
@@ -245,6 +279,8 @@ Default value: `undef`
 Data type: `Enum['present','absent']`
 
 Ensure the entire settings Hash is present or absent
+
+* `absent` removes the settings file and its lock file
 
 Default value: `'present'`
 
@@ -260,7 +296,8 @@ Default value: `'/etc/dconf/db'`
 
 ### <a name="Dconf--DBSettings"></a>`Dconf::DBSettings`
 
-Valid dconf database settings
+At least one database entry is required: an empty hash would render an
+empty profile file over the vendor-shipped one.
 
 Alias of
 
@@ -268,7 +305,7 @@ Alias of
 Hash[String[1], Struct[{
     'type'  => Enum['user', 'system', 'service', 'file'], # The type of database
     'order' => Optional[Integer[1]]                       # The order of the entry in the list
-  }]]
+  }], 1]
 ```
 
 ### <a name="Dconf--SettingsHash"></a>`Dconf::SettingsHash`

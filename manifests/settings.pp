@@ -22,8 +22,13 @@
 # @param profile
 #   The dconf profile where you want to place the key/value.
 #
+#   * When not set, falls back to `dconf::user_profile_defaults_name`
+#     (default `Defaults`)
+#
 # @param ensure
 #   Ensure the entire settings Hash is present or absent
+#
+#   * `absent` removes the settings file and its lock file
 #
 # @param base_dir
 #   The database base directory. This probably shouldn't be changed.
@@ -37,15 +42,7 @@ define dconf::settings (
 ) {
   include 'dconf'
 
-  if $profile {
-    $_profile = $profile
-  }
-  elsif $dconf::use_user_profile_defaults {
-    $_profile = $dconf::user_profile_defaults_name
-  }
-  else {
-    fail("You must specifiy a '${profile}' for '${title}'")
-  }
+  $_profile = pick($profile, $dconf::user_profile_defaults_name)
 
   $_name = regsubst($name.downcase, '( |/|!|@|#|\$|%|\^|&|\*|[|])', '_', 'G')
 
@@ -62,8 +59,13 @@ define dconf::settings (
       require   => Class['dconf::install']
   })
 
+  $_target_ensure = $ensure ? {
+    'absent' => 'absent',
+    default  => 'file',
+  }
+
   ensure_resource('file', $_target, {
-      'ensure' => 'file',
+      'ensure' => $_target_ensure,
       'owner'  => 'root',
       'group'  => 'root',
       'mode'   => '0644'

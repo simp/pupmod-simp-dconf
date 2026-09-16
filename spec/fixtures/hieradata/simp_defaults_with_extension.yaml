@@ -1,0 +1,13 @@
+---
+compliance_engine::enforcement:
+  - simp:defaults
+# Partial site value. `dconf::user_profile` has deep-merge lookup_options in
+# the module data, so this must MERGE with the profile's restored hierarchy
+# rather than replace it: `company` is added, `site` gets just its order
+# tweaked, and user/local/distro come through from the profile untouched.
+dconf::user_profile:
+  company:
+    type: system
+    order: 25
+  site:
+    order: 35
