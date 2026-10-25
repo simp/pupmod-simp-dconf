@@ -6,7 +6,8 @@ This file provides guidance to AI agents when working with code in this reposito
 
 `pupmod-simp-dconf` is a SIMP Puppet module that installs and manages
 [`dconf`](https://wiki.gnome.org/Projects/dconf) — the low-level configuration
-system used by GNOME and other desktop components on Enterprise Linux 8/9/10. It
+system used by GNOME and other desktop components on Enterprise Linux 8/9/10
+and Ubuntu 22.04/24.04. It
 manages three things:
 
 1. **dconf profiles** (`/etc/dconf/profile/*`) — the ordered list of databases
@@ -54,7 +55,7 @@ of shared state (`dconf::install`, `dconf::profile`, and `dconf::settings` all
 - **`authselect`** (default `false`) — when using authselect you can hit resource
   conflicts on `/etc/dconf/db/distro.d/20-authselect` (+ its `locks/` twin);
   flipping this true declares (empty) `file` resources so Puppet "owns" them and
-  stops the conflict.
+  stops the conflict. EL-only.
 - **`package_ensure`** (default `'installed'`) — passed straight to
   `dconf::install`.
 - **`use_user_profile_defaults` / `use_user_settings_defaults`**
@@ -66,8 +67,9 @@ of shared state (`dconf::install`, `dconf::profile`, and `dconf::settings` all
   presence is the real gate.
 
 **`dconf::install` (`manifests/install.pp`, private — `assert_private()`)** —
-`stdlib::ensure_packages('dconf', { ensure => $dconf::package_ensure })`. Nothing
-else.
+`stdlib::ensure_packages($dconf::package_name, { ensure => $dconf::package_ensure })`.
+Nothing else. `package_name` defaults to `dconf`; `data/os/Debian.yaml` sets
+`dconf-cli` (Debian/Ubuntu have no `dconf` binary package).
 
 **`dconf::profile` (`manifests/profile.pp`, define)** — writes one profile file
 `${base_dir}/${target}` (default base `/etc/dconf/profile`) via **`concat`**. Each
@@ -101,10 +103,11 @@ given profile it:
 **The `dconf update` exec is deliberately convoluted — do not "simplify" it.**
 `dconf update` exits `0` even on failure, so success is inferred from output:
 ```
-/bin/dconf update |& /bin/tee /dev/fd/2 | /bin/wc -c | /bin/grep ^0$
+/bin/dconf update 2>&1 | /bin/tee /dev/fd/2 | /bin/wc -c | /bin/grep ^0$
 ```
 i.e. it fails the resource unless `dconf update` produced **zero bytes** of
-output. Rewriting this to a plain `dconf update` would silently swallow errors.
+output. It runs under `/bin/sh` (dash on Ubuntu), so keep it POSIX: no bash
+`|&`. Rewriting this to a plain `dconf update` would silently swallow errors.
 
 ### Types (`types/`)
 
@@ -155,8 +158,12 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
   runtime dep.
 - Runtime: **`openvox`** (`>= 8.0.0 < 9.0.0`) — `metadata.json` `requirements`
   targets openvox, not stock `puppet`.
-- Supported OS: RedHat/OracleLinux/Rocky/AlmaLinux **8/9/10** and CentOS **9/10**
-  (EL7 already removed; see `metadata.json`).
+- Supported OS: RedHat/OracleLinux/Rocky/AlmaLinux **8/9/10**, CentOS **9/10**,
+  and Ubuntu **22.04/24.04** (EL7 already removed; see `metadata.json`).
+  OS differences live in module data (`hiera.yaml` has an `os/%{os.family}`
+  layer), never in manifest conditionals. On Ubuntu, GDM's shipped `gdm`
+  profile (`/usr/share/dconf/profile/gdm`) does not include `system-db:gdm`;
+  see the README's Ubuntu notes.
 
 ## Repository layout
 
@@ -165,7 +172,7 @@ output. Rewriting this to a plain `dconf update` would silently swallow errors.
 - `manifests/profile.pp` — `dconf::profile` define (`/etc/dconf/profile/*` via concat).
 - `manifests/settings.pp` — `dconf::settings` define (key/value rules + locks + `dconf update`).
 - `types/dbsettings.pp`, `types/settingshash.pp` — the two data types above.
-- `data/common.yaml` + `hiera.yaml` — module data (no values since 3.0.0; only the deep-merge `lookup_options` for `dconf::user_profile`).
+- `data/common.yaml` + `hiera.yaml` — module data (no values since 3.0.0; only the deep-merge `lookup_options` for `dconf::user_profile`). `data/os/Debian.yaml` sets the Debian/Ubuntu package name.
 - `SIMP/compliance_profiles/` — the `simp:defaults` compliance profile (`profile-simp_defaults.yaml` lists the checks; `checks.yaml` defines them).
 - `spec/classes/init_spec.rb`, `spec/defines/{profile,settings}_spec.rb` — rspec-puppet unit tests (init_spec guards the "bare include only installs the package" contract).
 - `spec/classes/dconf_simp_defaults_profile_spec.rb` + `spec/fixtures/hieradata/` — end-to-end specs for the `simp:defaults` profile (enforcement, site override, deep-merge extension).

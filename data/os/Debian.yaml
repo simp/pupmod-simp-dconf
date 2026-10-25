@@ -1,0 +1,4 @@
+---
+# Debian and Ubuntu split dconf into several binary packages; the `dconf`
+# command (needed for `dconf update`) is in `dconf-cli`.
+dconf::package_name: 'dconf-cli'
