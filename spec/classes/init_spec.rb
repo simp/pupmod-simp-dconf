@@ -1,17 +1,19 @@
 require 'spec_helper'
+require_relative '../lib/supported_os_facts'
 
 # The "bare include is safe" contexts below are the regression guard for the
 # 3.0.0 blast-radius refactor: `include dconf` must only install the package.
 describe 'dconf' do
-  on_supported_os.each do |os, os_facts|
+  all_supported_os.each do |os, os_facts|
     context "on #{os}" do
       let(:facts) { os_facts }
+      let(:package_name) { (os_facts[:os][:family] == 'Debian') ? 'dconf-cli' : 'dconf' }
 
       context 'with default parameters (bare include)' do
         it { is_expected.to compile.with_all_deps }
         it { is_expected.to create_class('dconf') }
         it { is_expected.to create_class('dconf::install') }
-        it { is_expected.to create_package('dconf').with_ensure('installed') }
+        it { is_expected.to create_package(package_name).with_ensure('installed') }
 
         it 'does not manage any dconf profile' do
           is_expected.not_to create_dconf__profile('Defaults')

@@ -1,7 +1,8 @@
 require 'spec_helper'
+require_relative '../lib/supported_os_facts'
 
 describe 'dconf::settings', type: :define do
-  on_supported_os.each do |os, os_facts|
+  all_supported_os.each do |os, os_facts|
     context "on #{os}" do
       let(:facts) { os_facts }
 
@@ -32,6 +33,13 @@ describe 'dconf::settings', type: :define do
         it do
           is_expected.to create_file('/etc/dconf/db/gdm.d/locks/enable_lock_delay')
             .with_content('/org/gnome/desktop/screensaver/lock-delay')
+        end
+        # The command runs under /bin/sh, which is dash on Ubuntu, so it must
+        # not use bash-only syntax such as `|&`.
+        it do
+          is_expected.to contain_exec('dconf update Enable lock delay')
+            .with_command('/bin/dconf update 2>&1 | /bin/tee /dev/fd/2 | /bin/wc -c | /bin/grep ^0$')
+            .with_refreshonly(true)
         end
       end
 

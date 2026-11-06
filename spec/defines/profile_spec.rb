@@ -1,7 +1,8 @@
 require 'spec_helper'
+require_relative '../lib/supported_os_facts'
 
 describe 'dconf::profile', type: :define do
-  on_supported_os.each do |os, os_facts|
+  all_supported_os.each do |os, os_facts|
     context "on #{os}" do
       let(:facts) { os_facts }
 

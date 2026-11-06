@@ -3,6 +3,11 @@ require 'spec_helper_acceptance'
 test_name 'dconf class'
 
 describe 'dconf class' do
+  # Debian and Ubuntu have no `dconf` package; the command is in dconf-cli
+  def dconf_package(host)
+    (fact_on(host, 'os.family') == 'Debian') ? 'dconf-cli' : 'dconf'
+  end
+
   let(:manifest) do
     <<-EOS
       include '::dconf'
@@ -53,7 +58,7 @@ describe 'dconf class' do
         # resource` exits 0 whether it removes the package or finds it already absent
         # (no --detailed-exitcodes), so no acceptable_exit_codes override is needed.
         before(:context) do
-          on(host, 'puppet resource package dconf ensure=absent')
+          on(host, "puppet resource package #{dconf_package(host)} ensure=absent")
         end
 
         it 'applies without errors in noop mode' do
@@ -74,9 +79,16 @@ describe 'dconf class' do
         apply_manifest_on(host, manifest, { catch_changes: true })
       end
 
+      # Proves `dconf update` ran and succeeded (it runs under /bin/sh, which
+      # is dash on Ubuntu)
+      it 'compiles the settings into the test database' do
+        on(host, 'printf "system-db:test\n" > /tmp/dconf_test_profile')
+        result = on(host, 'DCONF_PROFILE=/tmp/dconf_test_profile dconf read /org/gnome/desktop/lockdown/disable-command-line')
+        expect(result.stdout.strip).to eq('true')
+      end
+
       it 'has dconf installed' do
-        result = on(host, 'rpm -q dconf', accept_all_exit_codes: true)
-        expect(result.exit_code).to eq(0), "Expected package 'dconf' to be installed"
+        expect(check_for_package(host, dconf_package(host))).to be(true), "Expected package '#{dconf_package(host)}' to be installed"
       end
     end
   end

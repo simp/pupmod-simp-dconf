@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative '../lib/supported_os_facts'
 require 'yaml'
 
 # Tests the `simp:defaults` Sicura Compliance Engine profile end to end: with
@@ -59,12 +60,12 @@ describe 'dconf' do
       File.expand_path('../fixtures/hieradata/hiera_compliance_engine.yaml', __dir__)
     end
 
-    on_supported_os.each do |os, os_facts|
+    all_supported_os.each do |os, os_facts|
       context "on #{os}" do
         let(:facts) { os_facts.merge(custom_hiera: 'simp_defaults_enforced') }
 
         it { is_expected.to compile.with_all_deps }
-        it { is_expected.to contain_package('dconf') }
+        it { is_expected.to contain_package((os_facts[:os][:family] == 'Debian') ? 'dconf-cli' : 'dconf') }
 
         it 'restores the pre-3.0.0 default user profile' do
           is_expected.to create_dconf__profile('Defaults').with_target('user')
@@ -113,7 +114,7 @@ describe 'dconf' do
     end
     let(:pre_condition) { TEST_SETTINGS }
 
-    on_supported_os.each do |os, os_facts|
+    all_supported_os.each do |os, os_facts|
       context "on #{os}" do
         let(:facts) { os_facts.merge(custom_hiera: 'simp_defaults_with_override') }
 
@@ -142,7 +143,7 @@ describe 'dconf' do
       File.expand_path('../fixtures/hieradata/hiera_compliance_engine.yaml', __dir__)
     end
 
-    on_supported_os.each do |os, os_facts|
+    all_supported_os.each do |os, os_facts|
       context "on #{os}" do
         let(:facts) { os_facts.merge(custom_hiera: 'simp_defaults_with_extension') }
 
