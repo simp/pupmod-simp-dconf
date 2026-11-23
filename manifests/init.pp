@@ -19,6 +19,12 @@
 #     created
 #   * When `undef` (the default), no settings are managed
 #
+# @param package_name
+#   The name of the package that provides the `dconf` command
+#
+#   * Defaults to `dconf` (Enterprise Linux); module data sets `dconf-cli`
+#     on Debian-family systems such as Ubuntu
+#
 # @param package_ensure
 #   The version of `dconf` to install
 #
@@ -68,9 +74,13 @@
 # @param authselect
 #   Flip this parameter to true if you are using authselect and receiving
 #   resource conflicts
+#
+#   * Only meaningful on Enterprise Linux, where authselect manages
+#     `/etc/dconf/db/distro.d/20-authselect`; leave it `false` elsewhere
 class dconf (
   Optional[Dconf::DBSettings]   $user_profile                = undef,
   Optional[Dconf::SettingsHash] $user_settings               = undef,
+  String[1]                     $package_name                = 'dconf',
   Variant[String[1],Boolean]    $package_ensure              = 'installed',
   Optional[Boolean]             $use_user_profile_defaults   = undef,
   String[1]                     $user_profile_defaults_name  = 'Defaults',

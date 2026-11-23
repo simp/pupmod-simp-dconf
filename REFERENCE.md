@@ -41,6 +41,7 @@ The following parameters are available in the `dconf` class:
 
 * [`user_profile`](#-dconf--user_profile)
 * [`user_settings`](#-dconf--user_settings)
+* [`package_name`](#-dconf--package_name)
 * [`package_ensure`](#-dconf--package_ensure)
 * [`use_user_profile_defaults`](#-dconf--use_user_profile_defaults)
 * [`user_profile_defaults_name`](#-dconf--user_profile_defaults_name)
@@ -73,6 +74,17 @@ Custom user settings that can be provided via Hiera globally
 * When `undef` (the default), no settings are managed
 
 Default value: `undef`
+
+##### <a name="-dconf--package_name"></a>`package_name`
+
+Data type: `String[1]`
+
+The name of the package that provides the `dconf` command
+
+* Defaults to `dconf` (Enterprise Linux); module data sets `dconf-cli`
+  on Debian-family systems such as Ubuntu
+
+Default value: `'dconf'`
 
 ##### <a name="-dconf--package_ensure"></a>`package_ensure`
 
@@ -161,6 +173,9 @@ Data type: `Boolean`
 
 Flip this parameter to true if you are using authselect and receiving
 resource conflicts
+
+* Only meaningful on Enterprise Linux, where authselect manages
+  `/etc/dconf/db/distro.d/20-authselect`; leave it `false` elsewhere
 
 Default value: `false`
 

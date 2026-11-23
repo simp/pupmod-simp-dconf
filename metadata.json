@@ -1,6 +1,6 @@
 {
   "name": "simp-dconf",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "author": "SIMP Team",
   "summary": "Provides an interface to system DConf configuration",
   "license": "Apache-2.0",
@@ -64,6 +64,13 @@
         "8",
         "9",
         "10"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "22.04",
+        "24.04"
       ]
     }
   ],

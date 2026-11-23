@@ -1,3 +1,9 @@
+* Sun Oct 18 2026 Steven Pritchard <steve@sicura.us> - 3.2.0
+- Add support for Ubuntu 22.04 and 24.04
+- Add `dconf::package_name` (`dconf-cli` on Debian-family systems)
+- Run `dconf update` with POSIX shell syntax so it works where `/bin/sh` is
+  not bash
+
 * Thu Oct 08 2026 Steven Pritchard <steve@sicura.us> - 3.1.0
 - Add support for OpenVox 9
 - Update metadata.json dependency ranges from the Forge

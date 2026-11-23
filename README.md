@@ -22,6 +22,9 @@
     * [Globally with `hiera`](#globally-with-hiera)
     * [What this creates on disk](#what-this-creates-on-disk-1)
   * [Restoring the pre-3.0.0 behavior (`simp:defaults`)](#restoring-the-pre-300-behavior-simpdefaults)
+  * [OS-specific notes](#os-specific-notes)
+    * [Ubuntu](#ubuntu)
+    * [Enterprise Linux and `authselect`](#enterprise-linux-and-authselect)
 * [Reference](#reference)
 * [Limitations](#limitations)
 * [Development](#development)
@@ -32,7 +35,8 @@
 
 `dconf` is a Puppet module that installs and manages
 [`dconf`](https://wiki.gnome.org/Projects/dconf) - the low-level configuration
-system used by GNOME and other desktop components on Enterprise Linux. Its main
+system used by GNOME and other desktop components on Enterprise Linux and
+Ubuntu. Its main
 hardening value is the **lock** mechanism: a locked key cannot be changed by
 the logged-in user, which is how screensaver, media-automount, and similar
 settings get enforced.
@@ -41,7 +45,8 @@ settings get enforced.
 
 The module manages three things:
 
-1. **The `dconf` package** - all that a bare `include dconf` does.
+1. **The `dconf` package** (`dconf-cli` on Ubuntu, set by
+   `dconf::package_name`) - all that a bare `include dconf` does.
 2. **dconf profiles** (`/etc/dconf/profile/*`) - the ordered list of databases
    consulted for a session. Managed by the `dconf::profile` defined type
    (one `concat` fragment per database entry, sorted by `order`), or globally
@@ -100,7 +105,8 @@ To use the module, just include the class:
 include 'dconf'
 ```
 
-This installs the `dconf` package and nothing else.
+This installs the package that provides the `dconf` command (`dconf` on
+Enterprise Linux, `dconf-cli` on Ubuntu) and nothing else.
 
 ## Usage
 
@@ -297,6 +303,54 @@ Because `dconf::user_profile` deep-merges (see
 `dconf::user_profile` hash in your own Hiera extends or tweaks the profile's
 hierarchy rather than replacing it.
 
+### OS-specific notes
+
+#### Ubuntu
+
+* The `dconf` command is in the `dconf-cli` package, which the module's data
+  sets as `dconf::package_name`. The file layout is the same as on Enterprise
+  Linux: profiles in `/etc/dconf/profile/`, databases in
+  `/etc/dconf/db/<name>.d/`, compiled by `dconf update`.
+* Ubuntu does not ship `/etc/dconf/profile/user`. Settings in a system
+  database only reach user sessions once a user profile lists that database,
+  for example through `dconf::user_profile`.
+* GDM (`gdm3`) reads the `gdm` profile. Unlike Enterprise Linux, Ubuntu's
+  `gdm3` package ships it as `/usr/share/dconf/profile/gdm`, which contains
+  only `user-db:user` and `file-db:/var/lib/gdm3/greeter-dconf-defaults`.
+  That file is compiled from `/etc/gdm3/greeter.dconf-defaults` when GDM
+  starts; `/etc/dconf/db/gdm.d/` is **not** read. To manage login screen
+  settings (such as the login banner) with `dconf::settings` and a `gdm`
+  profile, also write `/etc/dconf/profile/gdm`, which takes precedence over
+  the copy in `/usr/share`, keeping the greeter defaults as the last
+  database:
+
+  ```puppet
+  dconf::profile { 'gdm':
+    entries => {
+      'user'                                  => { 'type' => 'user',   'order' => 1 },
+      'gdm'                                   => { 'type' => 'system', 'order' => 10 },
+      '/var/lib/gdm3/greeter-dconf-defaults' => { 'type' => 'file',   'order' => 20 },
+    },
+  }
+
+  dconf::settings { 'login banner':
+    profile       => 'gdm',
+    settings_hash => {
+      'org/gnome/login-screen' => {
+        'banner-message-enable' => { 'value' => true },
+        'banner-message-text'   => { 'value' => "'You are accessing a U.S. Government information system...'" },
+      },
+    },
+  }
+  ```
+
+  GDM picks up the change when it restarts (`systemctl restart gdm3`).
+
+#### Enterprise Linux and `authselect`
+
+`dconf::authselect` only applies to Enterprise Linux, where `authselect`
+manages `/etc/dconf/db/distro.d/20-authselect`. Leave it `false` on Ubuntu.
+
 ## Reference
 
 See the [API documentation](./REFERENCE.md) or run `puppet strings` for full
@@ -305,7 +359,8 @@ details.
 ## Limitations
 
 SIMP Puppet modules are generally intended for use on Red Hat Enterprise Linux
-and compatible distributions, such as CentOS.
+and compatible distributions, such as CentOS. This module also supports
+Ubuntu 22.04 and 24.04.
 
 Please see the [`metadata.json` file](./metadata.json) for the most up-to-date
 list of supported operating systems, Puppet versions, and module dependencies.

@@ -1,0 +1,17 @@
+---
+HOSTS:
+  ubuntu2404:
+    roles:
+      - client
+    platform: ubuntu-24.04-amd64
+    hypervisor: docker
+    image: ubuntu:24.04
+    docker_cmd: ['/sbin/init']
+    docker_preserve_image: true
+    docker_image_commands:
+      # Puppet Deps
+      - 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y systemd-sysv rsync openssl openssh-server curl ca-certificates'
+CONFIG:
+  log_level: verbose
+  type: aio
+  puppet_collection: <%= ENV.fetch('BEAKER_PUPPET_COLLECTION', 'openvox9') %>
